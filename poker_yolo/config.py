@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from poker_yolo.augmentations import AugmentationConfig, build_albumentations
+from poker_yolo.device import resolve_device_setting
 from poker_yolo.reporting import ReportingConfig
 
 
@@ -16,19 +17,6 @@ def _resolve_path(base: Path, value: str | Path) -> Path:
     if not path.is_absolute():
         path = base / path
     return path.resolve()
-
-
-def _resolve_device(device: str) -> str:
-    if device != "auto":
-        return device
-    try:
-        import torch
-
-        if torch.cuda.is_available():
-            return "0"
-    except ImportError:
-        pass
-    return "cpu"
 
 
 @dataclass
@@ -94,7 +82,7 @@ class Config:
             epochs=train["epochs"],
             batch=train["batch"],
             patience=train["patience"],
-            device=_resolve_device(train["device"]),
+            device=resolve_device_setting(train["device"]),
             workers=train["workers"],
             project=train["project"],
             name=train["name"],

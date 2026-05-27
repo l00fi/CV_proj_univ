@@ -6,10 +6,10 @@
 
 ### Данные
 
-| Разбиение | Изображений | Описание |
-|-----------|-------------|----------|
-| `train`   | 109         | Обучающая выборка |
-| `test`    | 31          | Тестовая выборка (используется для валидации и инференса) |
+| Источник | Изображений | Описание |
+|----------|-------------|----------|
+| Kaggle `gpiosenka/cards-image-datasetclassification` | ~8154 | Обучение YOLO (train/valid/test, одна карта на фото) |
+| Roboflow `dataset/test/` | 140 | **Hands benchmark** — оценка покерных комбинаций (`poker-hand`) |
 
 - **Формат разметки:** YOLO (нормализованные `class_id cx cy w h`)
 - **Количество классов:** 52 (все карты стандартной колоды: ранг × масть)
@@ -50,7 +50,7 @@ train → validate → infer → report
 |-----|--------|------------|
 | 1. Train | `poker_yolo/train.py` | Обучение YOLOv8, MLflow callbacks, мониторинг ресурсов |
 | 2. Validate | `poker_yolo/validate.py` | mAP, Precision, Recall, F1 на test split |
-| 3. Infer | `poker_yolo/infer.py` | Предсказания на `infer.source` (по умолчанию `dataset/test/images`) |
+| 3. Infer | `poker_yolo/infer.py` | Предсказания на `infer.source` (по умолчанию `dataset/kaggle/test/images`) |
 | 4. Report | `poker_yolo/reporting.py` | JSON/MD/Prometheus, 3 preview-изображения, production KPI |
 
 Отдельные команды `validate` и `infer` доступны для повторного запуска на уже обученной модели.
@@ -166,7 +166,8 @@ CV_proj/
 |------|-------|--------|------------|------------|
 | `configs/smoke.yaml` | 3 | cpu | localhost:5000 | Быстрая проверка пайплайна |
 | `configs/local.yaml` | 10 | auto | localhost:5000 | Локальная разработка |
-| `configs/default.yaml` | 50 | auto | mlflow:5000 (Docker) | Полное обучение |
+| `configs/default.yaml` | 50 | auto | mlflow:5000 (Docker) | Полное обучение (Kaggle) |
+| `configs/hands.yaml` | — | auto | localhost:5000 | `poker-hand` на `dataset/test/` |
 
 Ключевые секции YAML: `data`, `model`, `train`, `augmentations`, `validate`, `infer`, `mlflow`, `reporting`.
 
@@ -177,6 +178,7 @@ CV_proj/
 ### Локально
 
 ```bash
+cp .env.example .env   # KAGGLE_*, MLFLOW_TRACKING_URI для локального uv run
 uv sync
 docker compose up -d mlflow
 docker compose --profile observability up -d   # опционально
@@ -210,14 +212,18 @@ uv run poker-yolo --config configs/local.yaml infer \
   --source dataset/test/images
 ```
 
-### Docker
+### Docker (GPU)
 
 ```bash
+cp .env.example .env
 docker compose up -d mlflow
 docker compose --profile observability up -d
 docker compose build poker-yolo
+docker compose run --rm poker-yolo resolve-device
 docker compose run --rm poker-yolo train --config configs/default.yaml
 ```
+
+Переменные — в `.env`. NVIDIA Container Toolkit; `gpus: all`. `device: auto` → GPU или CPU.
 
 ---
 
@@ -242,11 +248,17 @@ docker compose run --rm poker-yolo train --config configs/default.yaml
 
 ## Переменные окружения
 
+Все параметры — в **`.env`** (шаблон `.env.example`). Docker Compose подставляет их в сервисы; Python читает `MLFLOW_TRACKING_URI`, `POKER_YOLO_DEVICE`, `REQUIRE_CUDA` и др.
+
 | Переменная | Описание |
 |------------|----------|
-| `MLFLOW_TRACKING_URI` | URI MLflow (перекрывает YAML) |
-| `PROMETHEUS_PUSHGATEWAY_URL` | Pushgateway для Grafana |
-| `REPORTS_BASE_URL` | Base URL для preview-ссылок в отчётах |
+| `KAGGLE_USERNAME` / `KAGGLE_KEY` | Kaggle API для train-датасета |
+| `MLFLOW_TRACKING_URI` | MLflow (`http://mlflow:5000` в Docker) |
+| `PROMETHEUS_PUSHGATEWAY_URL` | Pushgateway |
+| `REPORTS_BASE_URL` | Preview в отчётах |
+| `NVIDIA_VISIBLE_DEVICES` | GPU в контейнере |
+| `POKER_YOLO_DEVICE` / `REQUIRE_CUDA` | Устройство и режим «только GPU» |
+| `GRAFANA_*`, `*_PORT` | Observability stack |
 
 ---
 
@@ -270,8 +282,8 @@ Preview-изображения nginx отдаёт с диска (`runs/reports/p
 ### Определение комбинации на фото
 
 ```bash
-uv run poker-hand --config configs/local.yaml
-uv run poker-hand --image dataset/test/images/test_1.jpg --weights runs/detect/runs/train/poker_cards/weights/best.pt
+uv run poker-hand
+uv run poker-hand --image dataset/test/images/test_1.jpg
 ```
 
 Скрипт берёт случайное test-изображение (или `--image`), детектирует 5 карт и выводит название комбинации либо сообщает, что комбинацию определить нельзя.

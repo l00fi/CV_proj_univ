@@ -42,12 +42,12 @@
       "gridPos": {"h": 7, "w": 12, "x": 0, "y": 10},
       "id": 20,
       "targets": [
-        {"expr": "last_over_time(poker_yolo_train_cpu_avg_pct{status=\"success\"}[7d])", "legendFormat": "train CPU avg", "refId": "A"},
-        {"expr": "last_over_time(poker_yolo_val_cpu_avg_pct{status=\"success\"}[7d])", "legendFormat": "val CPU avg", "refId": "B"},
-        {"expr": "last_over_time(poker_yolo_train_gpu_util_avg_pct{status=\"success\"}[7d])", "legendFormat": "train GPU avg", "refId": "C"},
-        {"expr": "last_over_time(poker_yolo_val_gpu_util_avg_pct{status=\"success\"}[7d])", "legendFormat": "val GPU avg", "refId": "D"}
+        {"expr": "max by () (last_over_time(poker_yolo_train_cpu_avg_pct{status=\"success\"}[7d]))", "legendFormat": "Train phase: CPU avg (%)", "refId": "A"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_cpu_avg_pct{status=\"success\"}[7d]))", "legendFormat": "Validation phase: CPU avg (%)", "refId": "B"},
+        {"expr": "max by () (last_over_time(poker_yolo_train_gpu_util_avg_pct{status=\"success\"}[7d]))", "legendFormat": "Train phase: GPU util avg (%)", "refId": "C"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_gpu_util_avg_pct{status=\"success\"}[7d]))", "legendFormat": "Validation phase: GPU util avg (%)", "refId": "D"}
       ],
-      "title": "CPU / GPU Usage",
+      "title": "Resource Utilization (Train vs Validation)",
       "type": "stat"
     },
     {
@@ -56,11 +56,11 @@
       "gridPos": {"h": 7, "w": 12, "x": 12, "y": 10},
       "id": 21,
       "targets": [
-        {"expr": "last_over_time(poker_yolo_train_ram_avg_mb{status=\"success\"}[7d])", "legendFormat": "train RAM avg", "refId": "A"},
-        {"expr": "last_over_time(poker_yolo_val_ram_avg_mb{status=\"success\"}[7d])", "legendFormat": "val RAM avg", "refId": "B"},
-        {"expr": "last_over_time(poker_yolo_train_gpu_mem_peak_mb{status=\"success\"}[7d])", "legendFormat": "train GPU mem peak", "refId": "C"}
+        {"expr": "max by () (last_over_time(poker_yolo_train_ram_avg_mb{status=\"success\"}[7d]))", "legendFormat": "Train phase: RAM avg (MB)", "refId": "A"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_ram_avg_mb{status=\"success\"}[7d]))", "legendFormat": "Validation phase: RAM avg (MB)", "refId": "B"},
+        {"expr": "max by () (last_over_time(poker_yolo_train_gpu_mem_peak_mb{status=\"success\"}[7d]))", "legendFormat": "Train phase: GPU memory peak (MB)", "refId": "C"}
       ],
-      "title": "Memory Usage",
+      "title": "Memory Footprint (Train vs Validation)",
       "type": "stat"
     },
     {
@@ -70,9 +70,9 @@
       "id": 1,
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "auto"},
       "targets": [
-        {"expr": "last_over_time(poker_yolo_val_map50{status=\"success\"}[7d])", "legendFormat": "val mAP@0.5", "refId": "A"}
+        {"expr": "max by () (last_over_time(poker_yolo_val_map50{status=\"success\"}[7d]))", "legendFormat": "Validation mAP@0.5 (latest successful run)", "refId": "A"}
       ],
-      "title": "Validation mAP@0.5",
+      "title": "Primary Detection KPI: Validation mAP@0.5",
       "type": "gauge"
     },
     {
@@ -81,11 +81,11 @@
       "gridPos": {"h": 7, "w": 8, "x": 8, "y": 17},
       "id": 2,
       "targets": [
-        {"expr": "last_over_time(poker_yolo_train_duration_sec{status=\"success\"}[7d])", "legendFormat": "train", "refId": "A"},
-        {"expr": "last_over_time(poker_yolo_val_duration_sec{status=\"success\"}[7d])", "legendFormat": "val", "refId": "B"},
-        {"expr": "last_over_time(poker_yolo_pipeline_duration_sec{status=\"success\"}[7d])", "legendFormat": "total", "refId": "C"}
+        {"expr": "max by () (last_over_time(poker_yolo_train_duration_sec{status=\"success\"}[7d]))", "legendFormat": "Train phase duration (sec)", "refId": "A"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_duration_sec{status=\"success\"}[7d]))", "legendFormat": "Validation phase duration (sec)", "refId": "B"},
+        {"expr": "max by () (last_over_time(poker_yolo_pipeline_duration_sec{status=\"success\"}[7d]))", "legendFormat": "Full pipeline duration (sec)", "refId": "C"}
       ],
-      "title": "Duration (train / val / total)",
+      "title": "Phase Durations",
       "type": "stat"
     },
     {
@@ -94,11 +94,11 @@
       "gridPos": {"h": 7, "w": 8, "x": 16, "y": 17},
       "id": 30,
       "targets": [
-        {"expr": "last_over_time(poker_yolo_synthetic_to_real_ratio{status=\"success\"}[7d])", "legendFormat": "aug ratio", "refId": "A"},
-        {"expr": "last_over_time(poker_yolo_estimated_augmented_views_per_epoch{status=\"success\"}[7d])", "legendFormat": "views/epoch", "refId": "B"},
-        {"expr": "last_over_time(poker_yolo_model_size_mb{status=\"success\"}[7d])", "legendFormat": "model MB", "refId": "C"}
+        {"expr": "max by () (last_over_time(poker_yolo_synthetic_to_real_ratio{status=\"success\"}[7d]))", "legendFormat": "Synthetic-to-real augmentation ratio", "refId": "A"},
+        {"expr": "max by () (last_over_time(poker_yolo_estimated_augmented_views_per_epoch{status=\"success\"}[7d]))", "legendFormat": "Estimated augmented views per epoch", "refId": "B"},
+        {"expr": "max by () (last_over_time(poker_yolo_model_size_mb{status=\"success\"}[7d]))", "legendFormat": "Model size (MB)", "refId": "C"}
       ],
-      "title": "Augmentation & Model",
+      "title": "Augmentation Intensity and Model Footprint",
       "type": "stat"
     },
     {
@@ -107,12 +107,12 @@
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
       "id": 3,
       "targets": [
-        {"expr": "last_over_time(poker_yolo_val_precision{status=\"success\"}[7d])", "legendFormat": "precision", "refId": "A"},
-        {"expr": "last_over_time(poker_yolo_val_recall{status=\"success\"}[7d])", "legendFormat": "recall", "refId": "B"},
-        {"expr": "last_over_time(poker_yolo_val_f1{status=\"success\"}[7d])", "legendFormat": "f1", "refId": "C"},
-        {"expr": "last_over_time(poker_yolo_train_map50{status=\"success\"}[7d])", "legendFormat": "train mAP@0.5", "refId": "D"}
+        {"expr": "max by () (last_over_time(poker_yolo_val_precision{status=\"success\"}[7d]))", "legendFormat": "Validation precision", "refId": "A"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_recall{status=\"success\"}[7d]))", "legendFormat": "Validation recall", "refId": "B"},
+        {"expr": "max by () (last_over_time(poker_yolo_val_f1{status=\"success\"}[7d]))", "legendFormat": "Validation F1-score", "refId": "C"},
+        {"expr": "max by () (last_over_time(poker_yolo_train_map50{status=\"success\"}[7d]))", "legendFormat": "Train mAP@0.5", "refId": "D"}
       ],
-      "title": "Quality Metrics",
+      "title": "Detection Quality Metrics",
       "type": "stat"
     }
   ],

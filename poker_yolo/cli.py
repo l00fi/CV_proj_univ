@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from poker_yolo.config import Config
+from poker_yolo.kaggle_dataset import ensure_dataset_if_needed
 from poker_yolo.infer import run_inference
 from poker_yolo.logging_config import setup_logging
 from poker_yolo.monitoring import (
@@ -254,6 +255,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     config = Config.from_yaml(config_path)
+    if args.command in {"train", "validate", "infer"}:
+        ensure_dataset_if_needed(config.dataset_root)
     setup_logging(
         config.reporting.log_dir,
         level=config.reporting.level,

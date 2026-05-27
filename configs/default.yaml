@@ -1,8 +1,8 @@
 # YOLOv8 training configuration for poker card detection
 
 data:
-  yaml_path: dataset/data.yaml
-  dataset_root: dataset
+  yaml_path: dataset/kaggle/data.yaml
+  dataset_root: dataset/kaggle
 
 model:
   weights: yolov8n.pt
@@ -60,13 +60,13 @@ augmentations:
 validate:
   metric_conf: 0.001
   iou: 0.45
-  split: test
+  split: val
 
 infer:
   conf: 0.35
   iou: 0.45
   save_dir: runs/infer
-  source: dataset/test/images
+  source: dataset
 
 mlflow:
   tracking_uri: http://mlflow:5000

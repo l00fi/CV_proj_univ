@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 from ultralytics import YOLO
 
-from poker_yolo.cli import _default_config, _default_weights
+from poker_yolo.cli import _default_weights
 from poker_yolo.config import Config
 from poker_yolo.hands import (
     HandEvaluation,
@@ -80,11 +80,27 @@ def analyze_image(
     return deduped, evaluate_hand(labels)
 
 
+def _default_hands_config() -> Path:
+    candidates = [
+        Path("configs/hands.yaml"),
+        Path("/app/configs/hands.yaml"),
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Определить покерную комбинацию на изображении с помощью обученной модели",
     )
-    parser.add_argument("--config", type=Path, default=None, help="YAML-конфиг")
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="YAML-конфиг (по умолчанию configs/hands.yaml — весь dataset/test)",
+    )
     parser.add_argument("--weights", type=Path, default=None, help="Путь к best.pt")
     parser.add_argument("--image", type=Path, default=None, help="Изображение (default: random test)")
     parser.add_argument("--seed", type=int, default=None, help="Seed для случайного test-изображения")
@@ -94,7 +110,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    config_path = args.config or _default_config()
+    config_path = args.config or _default_hands_config()
     if not config_path.exists():
         print(f"Конфиг не найден: {config_path}", file=sys.stderr)
         return 1

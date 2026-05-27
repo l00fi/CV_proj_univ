@@ -19,6 +19,16 @@ def test_device_auto_resolves_to_cpu_without_cuda(default_config_path: Path, pro
 
 def test_device_auto_resolves_to_gpu_when_available(default_config_path: Path, project_root: Path, mocker) -> None:
     mocker.patch("torch.cuda.is_available", return_value=True)
+    mocker.patch("torch.cuda.device_count", return_value=1)
+    config = Config.from_yaml(default_config_path, project_root=project_root)
+    assert config.device == "0"
+
+
+def test_poker_yolo_device_env_overrides_cuda_probe(
+    default_config_path: Path, project_root: Path, monkeypatch, mocker,
+) -> None:
+    monkeypatch.setenv("POKER_YOLO_DEVICE", "0")
+    mocker.patch("torch.cuda.is_available", return_value=False)
     config = Config.from_yaml(default_config_path, project_root=project_root)
     assert config.device == "0"
 
@@ -32,8 +42,9 @@ def test_config_from_default_yaml(default_config_path: Path, project_root: Path)
     assert config.augmentations.enabled is True
     assert config.augmentations.mosaic == 1.0
     assert config.augmentations.mixup == 0.2
-    assert config.data_yaml == (project_root / "dataset" / "data.yaml").resolve()
-    assert config.val_split == "test"
+    assert config.data_yaml == (project_root / "dataset" / "kaggle" / "data.yaml").resolve()
+    assert config.dataset_root == (project_root / "dataset" / "kaggle").resolve()
+    assert config.val_split == "val"
     assert config.val_metric_conf == 0.001
     assert config.infer_source.name == "images"
 

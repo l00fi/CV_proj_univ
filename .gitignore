@@ -37,4 +37,9 @@ Thumbs.db
 
 # Env secrets (never commit)
 .env
-.env.*
+.env.local
+!.env.example
+.kaggle/
+
+# Kaggle training cache (downloaded in Docker / locally)
+dataset/kaggle/

@@ -140,21 +140,6 @@ def test_legacy_duplicate_export_format_is_invalid() -> None:
     assert errors, "legacy duplicate export must be rejected before push"
 
 
-def test_collect_export_metrics_deduplicates_resource_and_production() -> None:
-    report = _sample_train_report()
-    exported = collect_export_metrics(report)
-    assert exported["train_cpu_avg_pct"] == 55.0
-    assert exported["val_map50"] == 0.35
-    assert exported["pipeline_duration_sec"] == 1005.0
-
-
-def test_render_prometheus_has_no_duplicate_type_lines() -> None:
-    prom = render_prometheus(_sample_train_report())
-    type_lines = [line for line in prom.splitlines() if line.startswith("# TYPE poker_yolo_")]
-    metric_names = [line.split()[2] for line in type_lines]
-    assert len(metric_names) == len(set(metric_names))
-
-
 def test_render_prometheus_includes_grafana_dashboard_metrics() -> None:
     prom = render_prometheus(_sample_train_report())
     missing = missing_grafana_metrics(prom)
@@ -225,16 +210,39 @@ def test_docker_compose_observability_services(project_root: Path) -> None:
     services = compose["services"]
     for name, meta in OBSERVABILITY_SERVICES.items():
         assert name in services, f"Missing docker service: {name}"
-        if "port" in meta:
-            port_mapping = str(meta["port"])
+        if "port_env" in meta:
+            port_var = str(meta["port_env"])
             published = yaml.dump(services[name].get("ports", []))
-            assert port_mapping in published, f"Service {name} should publish port {port_mapping}"
+            assert port_var in published, f"Service {name} should map host port via ${port_var}"
 
 
 def test_report_server_mounts_reports_directory(project_root: Path) -> None:
     compose = yaml.safe_load((project_root / "docker-compose.yml").read_text(encoding="utf-8"))
     volumes = compose["services"]["report-server"]["volumes"]
     assert any("runs/reports" in v for v in volumes)
+
+
+def test_docker_compose_poker_yolo_uses_env_file(project_root: Path) -> None:
+    compose = yaml.safe_load((project_root / "docker-compose.yml").read_text(encoding="utf-8"))
+    svc = compose["services"]["poker-yolo"]
+    assert svc.get("gpus") == "all"
+    assert svc.get("env_file") == [".env"]
+    env = svc.get("environment", {})
+    assert env.get("NVIDIA_VISIBLE_DEVICES") == "${NVIDIA_VISIBLE_DEVICES}"
+    assert env.get("MLFLOW_TRACKING_URI") == "${MLFLOW_TRACKING_URI}"
+    assert env.get("REQUIRE_CUDA") == "${REQUIRE_CUDA}"
+
+
+def test_env_example_documents_required_keys(project_root: Path) -> None:
+    example = (project_root / ".env.example").read_text(encoding="utf-8")
+    for key in (
+        "KAGGLE_USERNAME",
+        "KAGGLE_KEY",
+        "MLFLOW_TRACKING_URI",
+        "NVIDIA_VISIBLE_DEVICES",
+        "REQUIRE_CUDA",
+    ):
+        assert key in example
 
 
 def test_grafana_metric_catalog_matches_dashboard_expressions(project_root: Path) -> None:

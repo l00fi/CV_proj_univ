@@ -140,13 +140,17 @@ def compute_dataset_stats(dataset_root: Path, data_yaml: Path) -> dict[str, Any]
 
     raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
     root = dataset_root
-    train_img = root / raw["train"]
-    test_img = root / raw["test"]
+    train_img = root / raw.get("train", "train/images")
+    val_key = "val" if "val" in raw else "valid"
+    val_img = root / raw.get(val_key, raw.get("valid", "valid/images"))
+    test_img = root / raw.get("test", "test/images")
     train_count = len(list(train_img.glob("*"))) if train_img.exists() else 0
+    val_count = len(list(val_img.glob("*"))) if val_img.exists() else 0
     test_count = len(list(test_img.glob("*"))) if test_img.exists() else 0
     names = raw.get("names", [])
     return {
         "train_images": train_count,
+        "val_images": val_count,
         "test_images": test_count,
         "num_classes": len(names),
         "class_names": names,

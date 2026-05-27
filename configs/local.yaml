@@ -1,15 +1,15 @@
 # Local development overrides (MLflow on localhost)
 
 data:
-  yaml_path: dataset/data.yaml
-  dataset_root: dataset
+  yaml_path: dataset/kaggle/data.yaml
+  dataset_root: dataset/kaggle
 
 model:
   weights: yolov8n.pt
   imgsz: 640
 
 train:
-  epochs: 10
+  epochs: 3
   batch: 4
   patience: 5
   device: auto
@@ -55,13 +55,13 @@ augmentations:
 validate:
   metric_conf: 0.001
   iou: 0.45
-  split: test
+  split: val
 
 infer:
   conf: 0.25
   iou: 0.45
   save_dir: runs/infer
-  source: dataset/test/images
+  source: dataset
 
 mlflow:
   tracking_uri: http://localhost:5000

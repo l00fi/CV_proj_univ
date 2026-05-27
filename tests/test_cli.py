@@ -32,6 +32,7 @@ def test_build_parser_subcommands() -> None:
 def test_main_train_dispatches_training_and_validation(
     minimal_config_path, mocker,
 ) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     mock_train = mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mock_val = mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
     mock_infer = mocker.patch("poker_yolo.cli.run_inference", return_value=Path("runs/infer/pred_1"))
@@ -48,6 +49,7 @@ def test_main_train_dispatches_training_and_validation(
 
 
 def test_main_validate_missing_weights_returns_error(minimal_config_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     mocker.patch("poker_yolo.cli.run_validation")
     mocker.patch("poker_yolo.cli.setup_logging")
     code = main(["--config", str(minimal_config_path), "validate"])
@@ -55,6 +57,7 @@ def test_main_validate_missing_weights_returns_error(minimal_config_path, mocker
 
 
 def test_main_validate_with_weights(minimal_config_path, tmp_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     weights = tmp_path / "best.pt"
     weights.write_bytes(b"fake")
     mock_val = mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 1.0))
@@ -68,6 +71,7 @@ def test_main_validate_with_weights(minimal_config_path, tmp_path, mocker) -> No
 
 
 def test_main_infer_missing_source_returns_error(minimal_config_path, tmp_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     weights = tmp_path / "best.pt"
     weights.write_bytes(b"fake")
     mocker.patch("poker_yolo.cli.setup_logging")
@@ -79,6 +83,7 @@ def test_main_infer_missing_source_returns_error(minimal_config_path, tmp_path, 
 
 
 def test_main_infer_success(minimal_config_path, tmp_path, project_root, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     weights = tmp_path / "best.pt"
     weights.write_bytes(b"fake")
     source = project_root / "dataset" / "test" / "images"
@@ -97,6 +102,7 @@ def test_main_infer_success(minimal_config_path, tmp_path, project_root, mocker)
 
 
 def test_main_train_skips_infer_when_requested(minimal_config_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
     mock_infer = mocker.patch("poker_yolo.cli.run_inference")
@@ -111,6 +117,7 @@ def test_main_train_skips_infer_when_requested(minimal_config_path, mocker) -> N
 
 
 def test_main_creates_final_report(minimal_config_path, tmp_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
     mocker.patch("poker_yolo.cli.setup_logging")
     mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))

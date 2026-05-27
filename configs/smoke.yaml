@@ -1,8 +1,8 @@
 # Smoke test config — minimal epochs for pipeline verification
 
 data:
-  yaml_path: dataset/data.yaml
-  dataset_root: dataset
+  yaml_path: dataset/kaggle/data.yaml
+  dataset_root: dataset/kaggle
 
 model:
   weights: yolov8n.pt
@@ -53,7 +53,7 @@ infer:
   conf: 0.35
   iou: 0.45
   save_dir: runs/infer
-  source: dataset/test/images
+  source: dataset/kaggle/test/images
 
 mlflow:
   tracking_uri: http://localhost:5000

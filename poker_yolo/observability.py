@@ -44,11 +44,11 @@ GRAFANA_METRICS: tuple[str, ...] = (
 )
 
 OBSERVABILITY_SERVICES: dict[str, dict[str, str | int]] = {
-    "mlflow": {"port": 5000},
-    "pushgateway": {"port": 9091, "profile": "observability"},
-    "prometheus": {"port": 9090, "profile": "observability"},
-    "grafana": {"port": 3001, "profile": "observability"},
-    "report-server": {"port": 8088, "profile": "observability"},
+    "mlflow": {"port_env": "MLFLOW_PORT"},
+    "pushgateway": {"port_env": "PUSHGATEWAY_PORT", "profile": "observability"},
+    "prometheus": {"port_env": "PROMETHEUS_PORT", "profile": "observability"},
+    "grafana": {"port_env": "GRAFANA_PORT", "profile": "observability"},
+    "report-server": {"port_env": "REPORT_SERVER_PORT", "profile": "observability"},
 }
 
 
