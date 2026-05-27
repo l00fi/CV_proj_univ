@@ -258,3 +258,13 @@ uv run pytest
 ```
 
 Подробное руководство — в [README.md](README.md).
+
+### Определение комбинации на фото
+
+```bash
+uv run poker-hand --config configs/local.yaml
+uv run poker-hand --image dataset/test/images/test_1.jpg --weights runs/detect/runs/train/poker_cards/weights/best.pt
+```
+
+Скрипт берёт случайное test-изображение (или `--image`), детектирует 5 карт и выводит название комбинации либо сообщает, что комбинацию определить нельзя.
+

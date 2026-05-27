@@ -21,6 +21,7 @@ dependencies = [
 
 [project.scripts]
 poker-yolo = "poker_yolo.cli:main"
+poker-hand = "poker_yolo.detect_hand_cli:main"
 
 [build-system]
 requires = ["hatchling"]

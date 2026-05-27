@@ -146,6 +146,8 @@ flowchart LR
 | `mlflow_utils.py` | Эксперименты, параметры, артефакты |
 | `logging_config.py` | JSONL-логи → `runs/logs/` |
 | `config.py` | Загрузка YAML-конфигов |
+| `hands.py` | Оценка покерной комбинации по 5 картам |
+| `detect_hand_cli.py` | CLI: определение комбинации на фото |
 
 **Инфраструктура:** `Dockerfile`, `docker-compose.yml`, `observability/` (Prometheus, Grafana, nginx).
 
@@ -233,6 +235,19 @@ uv run poker-yolo --config configs/local.yaml infer \
 
 Без `--weights` CLI ищет `best.pt` в `runs/detect/runs/train/<name>/weights/`.
 
+### Определение покерной комбинации
+
+```bash
+# Случайное фото из test + название комбинации
+uv run poker-hand --config configs/local.yaml
+
+# Конкретное изображение
+uv run poker-hand --config configs/local.yaml --image dataset/test/images/test_1.jpg
+
+# То же через scripts/
+uv run python scripts/detect_poker_hand.py --seed 42
+```
+
 ---
 
 ## Docker
@@ -255,7 +270,7 @@ uv sync --group dev
 uv run pytest
 ```
 
-61 тест: config, augmentations, CLI, pipeline, reporting, monitoring, predictions.
+68 тестов: config, augmentations, CLI, pipeline, reporting, monitoring, predictions, hands.
 
 ---
 
@@ -294,14 +309,3 @@ uv run pytest
 | Тесты зависают | Не задавайте `PROMETHEUS_PUSHGATEWAY_URL` на недоступный хост |
 
 ---
-
-## Публикация в Git
-
-```bash
-git add .
-git status          # убедитесь: нет runs/, .venv/, *.pt
-git commit -m "Your message"
-git push
-```
-
-> Датасет помечен как **Private** в Roboflow — проверьте права перед публикацией в открытый репозиторий.
