@@ -1,0 +1,78 @@
+# Local development overrides (MLflow on localhost)
+
+data:
+  yaml_path: dataset/data.yaml
+  dataset_root: dataset
+
+model:
+  weights: yolov8n.pt
+  imgsz: 640
+
+train:
+  epochs: 10
+  batch: 4
+  patience: 5
+  device: auto
+  workers: 2
+  project: runs/train
+  name: poker_cards
+  seed: 42
+  lr0: 0.01
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3
+
+augmentations:
+  enabled: true
+  mosaic: 1.0
+  mixup: 0.15
+  copy_paste: 0.25
+  cutmix: 0.05
+  fliplr: 0.5
+  flipud: 0.0
+  degrees: 12.0
+  translate: 0.12
+  scale: 0.45
+  shear: 3.0
+  perspective: 0.0003
+  hsv_h: 0.015
+  hsv_s: 0.6
+  hsv_v: 0.35
+  albumentations:
+    blur: 0.1
+    motion_blur: 0.08
+    gauss_noise: 0.1
+    brightness_contrast: 0.4
+    hue_saturation: 0.2
+    clahe: 0.08
+    image_compression: 0.2
+    coarse_dropout: 0.1
+    shift_scale_rotate: 0.2
+    optical_distortion: 0.03
+    to_gray: 0.03
+
+validate:
+  conf: 0.25
+  iou: 0.45
+  split: test
+
+infer:
+  conf: 0.35
+  iou: 0.45
+  save_dir: runs/infer
+
+mlflow:
+  tracking_uri: http://localhost:5000
+  experiment_name: poker-yolo
+  run_name: null
+
+reporting:
+  log_dir: runs/logs
+  report_dir: runs/reports
+  level: INFO
+  json_logs: true
+  console_json: false
+  reports_base_url: http://localhost:8088
+  preview_samples: 3
+  pushgateway_url: http://localhost:9091

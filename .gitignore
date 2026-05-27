@@ -1,0 +1,40 @@
+# Runtime artifacts
+runs/
+mlruns/
+mlartifacts/
+*.pt
+*.onnx
+*.cache
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Local temp / cache (Windows training workaround)
+.tmp/
+.uv-cache/
+
+# Logs
+*.log
+
+# IDE / OS
+.idea/
+.vscode/
+.cursor/
+.obsidian/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Env secrets (never commit)
+.env
+.env.*
