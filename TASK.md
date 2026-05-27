@@ -257,7 +257,13 @@ uv sync --group dev
 uv run pytest
 ```
 
-Подробное руководство — в [README.md](README.md).
+`tests/test_observability.py` проверяет Pushgateway payload, отсутствие дубликатов в Prometheus export, Grafana queries и wiring в `docker-compose.yml`.
+
+### Grafana: preview есть, метрики нет / HTTP 400
+
+Preview-изображения nginx отдаёт с диска (`runs/reports/preview/`), метрики — только через Pushgateway → Prometheus. Observability stack нужно поднять **до** `train`.
+
+Warning `Failed to push metrics to Pushgateway: HTTP Error 400` означает невалидный Prometheus payload (раньше — дубли `# TYPE` для одних и тех же метрик). После обновления в логах должно быть `Pushed metrics to Pushgateway`.
 
 ### Определение комбинации на фото
 

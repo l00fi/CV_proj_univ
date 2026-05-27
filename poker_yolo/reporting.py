@@ -3,14 +3,17 @@ from __future__ import annotations
 import json
 import logging
 import os
-import urllib.error
-import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from poker_yolo.logging_config import log_action
+from poker_yolo.observability import (
+    escape_label_value,
+    prepare_export_metrics,
+    push_to_pushgateway,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -320,48 +323,37 @@ def render_markdown(report: RunReport) -> str:
 
 def render_prometheus(report: RunReport) -> str:
     """Prometheus exposition format for Grafana dashboards."""
-    labels = f'phase="{report.phase}",run_id="{report.run_id}",status="{report.status}"'
+    labels = (
+        f'phase="{escape_label_value(report.phase)}"'
+        f',run_id="{escape_label_value(report.run_id)}"'
+        f',status="{escape_label_value(report.status)}"'
+    )
+    config_label = escape_label_value(report.config_name)
     lines = [
         "# HELP poker_yolo_run_duration_seconds Pipeline run duration in seconds.",
         "# TYPE poker_yolo_run_duration_seconds gauge",
         f"poker_yolo_run_duration_seconds{{{labels}}} {_duration_sec(report)}",
         "# HELP poker_yolo_run_info Static info metric (always 1 for latest run).",
         "# TYPE poker_yolo_run_info gauge",
-        f'poker_yolo_run_info{{{labels},config="{report.config_name}"}} 1',
+        f'poker_yolo_run_info{{{labels},config="{config_label}"}} 1',
     ]
 
-    for name, value in report.metrics.items():
-        metric = _sanitize_metric_name(name)
+    for metric, value in sorted(prepare_export_metrics(report).items()):
         lines.extend(
             [
-                f"# HELP poker_yolo_{metric} Reported {name} metric.",
+                f"# HELP poker_yolo_{metric} Reported {metric} metric.",
                 f"# TYPE poker_yolo_{metric} gauge",
-                f'poker_yolo_{metric}{{{labels}}} {float(value)}',
-            ]
-        )
-    for name, value in report.resources.items():
-        metric = _sanitize_metric_name(name)
-        lines.extend(
-            [
-                f"# HELP poker_yolo_{metric} Resource metric {name}.",
-                f"# TYPE poker_yolo_{metric} gauge",
-                f'poker_yolo_{metric}{{{labels}}} {float(value)}',
+                f"poker_yolo_{metric}{{{labels}}} {value}",
             ]
         )
     return "\n".join(lines) + "\n"
 
 
-def _push_prometheus_metrics(report: RunReport, pushgateway_url: str) -> None:
-    url = pushgateway_url.rstrip("/") + f"/metrics/job/poker_yolo/phase/{report.phase}/run_id/{report.run_id}"
+def _push_prometheus_metrics(report: RunReport, pushgateway_url_base: str) -> None:
     body = render_prometheus(report).encode("utf-8")
-    request = urllib.request.Request(url, data=body, method="POST")
-    request.add_header("Content-Type", "text/plain; version=0.0.4")
-    try:
-        with urllib.request.urlopen(request, timeout=10) as response:
-            if response.status >= 400:
-                logger.warning("Pushgateway returned HTTP %s", response.status)
-    except urllib.error.URLError as exc:
-        logger.warning("Failed to push metrics to Pushgateway: %s", exc)
+    error = push_to_pushgateway(body, pushgateway_url_base)
+    if error:
+        logger.warning("Failed to push metrics to Pushgateway: %s", error)
 
 
 def _utcnow() -> datetime:
@@ -374,5 +366,3 @@ def _duration_sec(report: RunReport) -> float:
     return (report.finished_at - report.started_at).total_seconds()
 
 
-def _sanitize_metric_name(name: str) -> str:
-    return name.lower().replace("-", "_").replace(".", "_")

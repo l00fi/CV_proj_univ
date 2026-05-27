@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -115,6 +116,7 @@ def test_start_and_finalize_report(tmp_path: Path) -> None:
 
 
 def test_log_event_without_active_report(caplog) -> None:
+    caplog.set_level(logging.INFO, logger="poker_yolo.reporting")
     log_event("orphan.event", detail="x")
     assert "orphan.event" in caplog.text
 
@@ -126,14 +128,14 @@ def test_pushgateway_called_when_configured(tmp_path: Path, mocker) -> None:
         pushgateway_url="http://pushgateway:9091",
     )
     start_report("validate")
-    mock_urlopen = mocker.patch("poker_yolo.reporting.urllib.request.urlopen")
+    mock_urlopen = mocker.patch("poker_yolo.observability.urllib.request.urlopen")
     mock_urlopen.return_value.__enter__.return_value.status = 200
 
     finalize_report(reporting, status="success")
 
     mock_urlopen.assert_called_once()
     request = mock_urlopen.call_args[0][0]
-    assert request.full_url.startswith("http://pushgateway:9091/metrics/job/poker_yolo/")
+    assert request.full_url == "http://pushgateway:9091/metrics/job/poker_yolo/instance/main"
 
 
 def test_finalize_report_raises_without_session() -> None:

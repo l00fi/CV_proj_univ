@@ -42,13 +42,13 @@
       "gridPos": {"h": 7, "w": 12, "x": 0, "y": 10},
       "id": 20,
       "targets": [
-        {"expr": "poker_yolo_train_cpu_avg_pct{status=\"success\"}", "legendFormat": "train CPU avg", "refId": "A"},
-        {"expr": "poker_yolo_val_cpu_avg_pct{status=\"success\"}", "legendFormat": "val CPU avg", "refId": "B"},
-        {"expr": "poker_yolo_train_gpu_util_avg_pct{status=\"success\"}", "legendFormat": "train GPU avg", "refId": "C"},
-        {"expr": "poker_yolo_val_gpu_util_avg_pct{status=\"success\"}", "legendFormat": "val GPU avg", "refId": "D"}
+        {"expr": "last_over_time(poker_yolo_train_cpu_avg_pct{status=\"success\"}[7d])", "legendFormat": "train CPU avg", "refId": "A"},
+        {"expr": "last_over_time(poker_yolo_val_cpu_avg_pct{status=\"success\"}[7d])", "legendFormat": "val CPU avg", "refId": "B"},
+        {"expr": "last_over_time(poker_yolo_train_gpu_util_avg_pct{status=\"success\"}[7d])", "legendFormat": "train GPU avg", "refId": "C"},
+        {"expr": "last_over_time(poker_yolo_val_gpu_util_avg_pct{status=\"success\"}[7d])", "legendFormat": "val GPU avg", "refId": "D"}
       ],
       "title": "CPU / GPU Usage",
-      "type": "timeseries"
+      "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -56,12 +56,12 @@
       "gridPos": {"h": 7, "w": 12, "x": 12, "y": 10},
       "id": 21,
       "targets": [
-        {"expr": "poker_yolo_train_ram_avg_mb{status=\"success\"}", "legendFormat": "train RAM avg", "refId": "A"},
-        {"expr": "poker_yolo_val_ram_avg_mb{status=\"success\"}", "legendFormat": "val RAM avg", "refId": "B"},
-        {"expr": "poker_yolo_train_gpu_mem_peak_mb{status=\"success\"}", "legendFormat": "train GPU mem peak", "refId": "C"}
+        {"expr": "last_over_time(poker_yolo_train_ram_avg_mb{status=\"success\"}[7d])", "legendFormat": "train RAM avg", "refId": "A"},
+        {"expr": "last_over_time(poker_yolo_val_ram_avg_mb{status=\"success\"}[7d])", "legendFormat": "val RAM avg", "refId": "B"},
+        {"expr": "last_over_time(poker_yolo_train_gpu_mem_peak_mb{status=\"success\"}[7d])", "legendFormat": "train GPU mem peak", "refId": "C"}
       ],
       "title": "Memory Usage",
-      "type": "timeseries"
+      "type": "stat"
     },
     {
       "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -70,7 +70,7 @@
       "id": 1,
       "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "orientation": "auto"},
       "targets": [
-        {"expr": "poker_yolo_val_map50{status=\"success\"}", "legendFormat": "val mAP@0.5", "refId": "A"}
+        {"expr": "last_over_time(poker_yolo_val_map50{status=\"success\"}[7d])", "legendFormat": "val mAP@0.5", "refId": "A"}
       ],
       "title": "Validation mAP@0.5",
       "type": "gauge"
@@ -81,9 +81,9 @@
       "gridPos": {"h": 7, "w": 8, "x": 8, "y": 17},
       "id": 2,
       "targets": [
-        {"expr": "poker_yolo_train_duration_sec{status=\"success\"}", "legendFormat": "train", "refId": "A"},
-        {"expr": "poker_yolo_val_duration_sec{status=\"success\"}", "legendFormat": "val", "refId": "B"},
-        {"expr": "poker_yolo_pipeline_duration_sec{status=\"success\"}", "legendFormat": "total", "refId": "C"}
+        {"expr": "last_over_time(poker_yolo_train_duration_sec{status=\"success\"}[7d])", "legendFormat": "train", "refId": "A"},
+        {"expr": "last_over_time(poker_yolo_val_duration_sec{status=\"success\"}[7d])", "legendFormat": "val", "refId": "B"},
+        {"expr": "last_over_time(poker_yolo_pipeline_duration_sec{status=\"success\"}[7d])", "legendFormat": "total", "refId": "C"}
       ],
       "title": "Duration (train / val / total)",
       "type": "stat"
@@ -94,9 +94,9 @@
       "gridPos": {"h": 7, "w": 8, "x": 16, "y": 17},
       "id": 30,
       "targets": [
-        {"expr": "poker_yolo_synthetic_to_real_ratio{status=\"success\"}", "legendFormat": "aug ratio", "refId": "A"},
-        {"expr": "poker_yolo_estimated_augmented_views_per_epoch{status=\"success\"}", "legendFormat": "views/epoch", "refId": "B"},
-        {"expr": "poker_yolo_model_size_mb{status=\"success\"}", "legendFormat": "model MB", "refId": "C"}
+        {"expr": "last_over_time(poker_yolo_synthetic_to_real_ratio{status=\"success\"}[7d])", "legendFormat": "aug ratio", "refId": "A"},
+        {"expr": "last_over_time(poker_yolo_estimated_augmented_views_per_epoch{status=\"success\"}[7d])", "legendFormat": "views/epoch", "refId": "B"},
+        {"expr": "last_over_time(poker_yolo_model_size_mb{status=\"success\"}[7d])", "legendFormat": "model MB", "refId": "C"}
       ],
       "title": "Augmentation & Model",
       "type": "stat"
@@ -107,13 +107,13 @@
       "gridPos": {"h": 8, "w": 24, "x": 0, "y": 24},
       "id": 3,
       "targets": [
-        {"expr": "poker_yolo_val_precision{status=\"success\"}", "legendFormat": "precision", "refId": "A"},
-        {"expr": "poker_yolo_val_recall{status=\"success\"}", "legendFormat": "recall", "refId": "B"},
-        {"expr": "poker_yolo_val_f1{status=\"success\"}", "legendFormat": "f1", "refId": "C"},
-        {"expr": "poker_yolo_train_map50{status=\"success\"}", "legendFormat": "train mAP@0.5", "refId": "D"}
+        {"expr": "last_over_time(poker_yolo_val_precision{status=\"success\"}[7d])", "legendFormat": "precision", "refId": "A"},
+        {"expr": "last_over_time(poker_yolo_val_recall{status=\"success\"}[7d])", "legendFormat": "recall", "refId": "B"},
+        {"expr": "last_over_time(poker_yolo_val_f1{status=\"success\"}[7d])", "legendFormat": "f1", "refId": "C"},
+        {"expr": "last_over_time(poker_yolo_train_map50{status=\"success\"}[7d])", "legendFormat": "train mAP@0.5", "refId": "D"}
       ],
       "title": "Quality Metrics",
-      "type": "timeseries"
+      "type": "stat"
     }
   ],
   "refresh": "30s",
@@ -124,5 +124,5 @@
   "timezone": "browser",
   "title": "Poker YOLO Training and Inference",
   "uid": "poker-yolo-main",
-  "version": 2
+  "version": 3
 }
