@@ -34,6 +34,7 @@ def test_config_from_default_yaml(default_config_path: Path, project_root: Path)
     assert config.augmentations.mixup == 0.2
     assert config.data_yaml == (project_root / "dataset" / "data.yaml").resolve()
     assert config.val_split == "test"
+    assert config.infer_source.name == "images"
 
 
 def test_config_from_minimal_yaml(minimal_config_path: Path, project_root: Path) -> None:

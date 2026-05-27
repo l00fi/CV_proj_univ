@@ -5,7 +5,6 @@ import time
 from pathlib import Path
 from typing import Any
 
-import pytorch_lightning as pl
 from ultralytics import YOLO
 
 from poker_yolo.callbacks import register_mlflow_callbacks, set_train_monitor
@@ -15,41 +14,6 @@ from poker_yolo.monitoring import ResourceMonitor
 from poker_yolo.reporting import get_report, log_event
 
 logger = logging.getLogger(__name__)
-
-
-class YOLOLightningModule(pl.LightningModule):
-    """Lightning wrapper around Ultralytics YOLOv8 training."""
-
-    def __init__(self, config: Config) -> None:
-        super().__init__()
-        self.config = config
-        self.model = YOLO(config.model_weights)
-        self._train_results: Any = None
-        self.save_hyperparameters(
-            {
-                "model_weights": config.model_weights,
-                "epochs": config.epochs,
-                "batch": config.batch,
-                "imgsz": config.imgsz,
-            }
-        )
-
-    def setup(self, stage: str | None = None) -> None:
-        if stage in ("fit", None):
-            setup_mlflow(self.config, run_name=f"train-{self.config.name}")
-            log_config(self.config)
-
-    def training_step(self, batch: Any, batch_idx: int) -> None:
-        pass
-
-    def configure_optimizers(self) -> None:
-        return None
-
-    def teardown(self, stage: str | None = None) -> None:
-        import mlflow
-
-        if mlflow.active_run() is not None:
-            mlflow.end_run()
 
 
 def run_training(config: Config) -> tuple[Path, float]:

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import logging
-import shutil
 import threading
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -163,13 +161,16 @@ def compute_production_metrics(
     val_metrics: dict[str, float],
     dataset_stats: dict[str, Any],
     aug_summary: dict[str, Any],
+    infer_duration_sec: float = 0.0,
+    infer_metrics: dict[str, float] | None = None,
 ) -> dict[str, float]:
     """Aggregate production-oriented KPIs for dashboards and reports."""
     metrics: dict[str, float] = {
         **resource_metrics,
         "train_duration_sec": train_duration_sec,
         "val_duration_sec": val_duration_sec,
-        "pipeline_duration_sec": train_duration_sec + val_duration_sec,
+        "infer_duration_sec": infer_duration_sec,
+        "pipeline_duration_sec": train_duration_sec + val_duration_sec + infer_duration_sec,
         "train_images": float(dataset_stats.get("train_images", 0)),
         "test_images": float(dataset_stats.get("test_images", 0)),
         "num_classes": float(dataset_stats.get("num_classes", 0)),
@@ -180,13 +181,8 @@ def compute_production_metrics(
     }
     for key, value in val_metrics.items():
         metrics[f"val_{key}"] = float(value)
+    if infer_metrics:
+        metrics.update({k: float(v) for k, v in infer_metrics.items() if v is not None})
     if weights_path and weights_path.exists():
         metrics["model_size_mb"] = weights_path.stat().st_size / (1024**2)
     return metrics
-
-
-def model_parameter_count(model: Any) -> int:
-    try:
-        return sum(p.numel() for p in model.model.parameters())
-    except Exception:
-        return 0

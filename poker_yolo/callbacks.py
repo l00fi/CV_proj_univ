@@ -12,7 +12,6 @@ from poker_yolo.reporting import get_report, log_event
 logger = logging.getLogger(__name__)
 
 _train_monitor: ResourceMonitor | None = None
-_val_monitor: ResourceMonitor | None = None
 
 
 def _sanitize_mlflow_key(key: str) -> str:
@@ -22,19 +21,6 @@ def _sanitize_mlflow_key(key: str) -> str:
 def set_train_monitor(monitor: ResourceMonitor) -> None:
     global _train_monitor
     _train_monitor = monitor
-
-
-def set_val_monitor(monitor: ResourceMonitor) -> None:
-    global _val_monitor
-    _val_monitor = monitor
-
-
-def get_train_monitor() -> ResourceMonitor | None:
-    return _train_monitor
-
-
-def get_val_monitor() -> ResourceMonitor | None:
-    return _val_monitor
 
 
 def _on_train_start(trainer: Any) -> None:

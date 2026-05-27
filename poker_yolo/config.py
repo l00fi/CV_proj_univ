@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -58,10 +58,10 @@ class Config:
     infer_conf: float
     infer_iou: float
     infer_save_dir: Path
+    infer_source: Path
     mlflow_tracking_uri: str
     mlflow_experiment: str
     mlflow_run_name: str | None
-    raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
     def from_yaml(cls, path: Path, project_root: Path | None = None) -> Config:
@@ -79,6 +79,12 @@ class Config:
         tracking_uri = os.environ.get("MLFLOW_TRACKING_URI", mlflow_cfg["tracking_uri"])
         aug = AugmentationConfig.from_dict(raw.get("augmentations"), train_fallback=train)
         reporting = ReportingConfig.from_dict(raw.get("reporting"), project_root=root)
+
+        infer_source_raw = infer.get("source")
+        if infer_source_raw:
+            infer_source = _resolve_path(root, infer_source_raw)
+        else:
+            infer_source = _resolve_path(root, data["dataset_root"]) / validate["split"] / "images"
 
         return cls(
             data_yaml=_resolve_path(root, data["yaml_path"]),
@@ -106,10 +112,10 @@ class Config:
             infer_conf=infer["conf"],
             infer_iou=infer["iou"],
             infer_save_dir=_resolve_path(root, infer["save_dir"]),
+            infer_source=infer_source,
             mlflow_tracking_uri=tracking_uri,
             mlflow_experiment=mlflow_cfg["experiment_name"],
             mlflow_run_name=mlflow_cfg.get("run_name"),
-            raw=raw,
         )
 
     def train_args(self) -> dict[str, Any]:

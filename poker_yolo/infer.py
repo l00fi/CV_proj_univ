@@ -8,7 +8,7 @@ from ultralytics import YOLO
 
 from poker_yolo.config import Config
 from poker_yolo.mlflow_utils import log_artifact_dir, log_config, log_metrics, setup_mlflow
-from poker_yolo.reporting import log_event
+from poker_yolo.reporting import get_report, log_event
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def run_inference(
     if pred_dir.exists():
         log_artifact_dir(pred_dir, artifact_path="predictions")
 
-    report = __import__("poker_yolo.reporting", fromlist=["get_report"]).get_report()
+    report = get_report()
     if report:
         report.set_metrics(infer_metrics)
         report.set_artifact("predictions", pred_dir)

@@ -66,6 +66,7 @@ infer:
   conf: 0.35
   iou: 0.45
   save_dir: runs/infer
+  source: dataset/test/images
 
 mlflow:
   tracking_uri: http://mlflow:5000

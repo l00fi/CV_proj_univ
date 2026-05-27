@@ -15,6 +15,10 @@ def test_build_parser_subcommands() -> None:
     args = parser.parse_args(["train"])
     assert args.command == "train"
 
+    args = parser.parse_args(["train", "--skip-infer"])
+    assert args.command == "train"
+    assert args.skip_infer is True
+
     args = parser.parse_args(["validate", "--weights", "model.pt"])
     assert args.command == "validate"
     assert args.weights == Path("model.pt")
@@ -30,7 +34,9 @@ def test_main_train_dispatches_training_and_validation(
 ) -> None:
     mock_train = mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mock_val = mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
+    mock_infer = mocker.patch("poker_yolo.cli.run_inference", return_value=Path("runs/infer/pred_1"))
     mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch("poker_yolo.cli._print_results_summary")
     mocker.patch("poker_yolo.cli.setup_logging")
 
     code = main(["--config", str(minimal_config_path), "train"])
@@ -38,6 +44,7 @@ def test_main_train_dispatches_training_and_validation(
     assert code == 0
     mock_train.assert_called_once()
     mock_val.assert_called_once()
+    mock_infer.assert_called_once()
 
 
 def test_main_validate_missing_weights_returns_error(minimal_config_path, mocker) -> None:
@@ -89,11 +96,27 @@ def test_main_infer_success(minimal_config_path, tmp_path, project_root, mocker)
     mock_infer.assert_called_once()
 
 
+def test_main_train_skips_infer_when_requested(minimal_config_path, mocker) -> None:
+    mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
+    mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
+    mock_infer = mocker.patch("poker_yolo.cli.run_inference")
+    mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch("poker_yolo.cli._print_results_summary")
+    mocker.patch("poker_yolo.cli.setup_logging")
+
+    code = main(["--config", str(minimal_config_path), "train", "--skip-infer"])
+
+    assert code == 0
+    mock_infer.assert_not_called()
+
+
 def test_main_creates_final_report(minimal_config_path, tmp_path, mocker) -> None:
     mocker.patch("poker_yolo.cli.setup_logging")
     mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
+    mocker.patch("poker_yolo.cli.run_inference", return_value=tmp_path / "pred")
     mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch("poker_yolo.cli._print_results_summary")
 
     main(["--config", str(minimal_config_path), "train"])
 

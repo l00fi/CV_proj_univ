@@ -138,19 +138,20 @@ CV_proj/
 ```bash
 # Локально (uv)
 uv sync
-uv run poker-yolo train
-uv run poker-yolo validate --weights runs/train/poker_cards/weights/best.pt
-uv run poker-yolo infer --weights runs/train/poker_cards/weights/best.pt --source dataset/test/images
-
-# Локально с MLflow на localhost (быстрый прогон — 10 эпох)
 docker compose up -d mlflow
+
+# Полный пайплайн: train → validate → infer → report
 uv run poker-yolo --config configs/local.yaml train
 
-# Docker (полный пайплайн)
-docker compose up -d mlflow
-docker compose run --rm poker-yolo train
-docker compose run --rm poker-yolo validate
-docker compose run --rm poker-yolo infer --source /app/dataset/test/images
+# Smoke test (3 эпохи)
+uv run poker-yolo --config configs/smoke.yaml train
+
+# Отдельные шаги (если модель уже обучена)
+uv run poker-yolo --config configs/local.yaml validate --weights runs/detect/runs/train/poker_cards/weights/best.pt
+uv run poker-yolo --config configs/local.yaml infer --weights runs/detect/runs/train/poker_cards/weights/best.pt --source dataset/test/images
+
+# Docker
+docker compose run --rm poker-yolo train --config configs/default.yaml
 ```
 
 MLflow UI: http://localhost:5000
