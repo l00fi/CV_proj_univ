@@ -70,7 +70,7 @@ def test_run_validation_calls_yolo_val(
         data=str(config.data_yaml),
         split="test",
         imgsz=config.imgsz,
-        conf=config.val_conf,
+        conf=config.val_metric_conf,
         iou=config.val_iou,
         device=config.device,
         verbose=True,

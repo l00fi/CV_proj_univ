@@ -263,7 +263,9 @@ uv run pytest
 
 Preview-изображения nginx отдаёт с диска (`runs/reports/preview/`), метрики — только через Pushgateway → Prometheus. Observability stack нужно поднять **до** `train`.
 
-Warning `Failed to push metrics to Pushgateway: HTTP Error 400` означает невалидный Prometheus payload (раньше — дубли `# TYPE` для одних и тех же метрик). После обновления в логах должно быть `Pushed metrics to Pushgateway`.
+### Grafana: val/test метрики нулевые, train — нет
+
+`validate.metric_conf` (по умолчанию `0.001`) используется для расчёта mAP и должен совпадать с порогом Ultralytics при обучении. Старый `validate.conf: 0.25` отсекал все слабые предсказания на ранних эпохах → `val_map50=0` в отчёте и Grafana, хотя в логах обучения mAP был ~0.06. Preview-изображения тоже используют `metric_conf`; batch-infer — `infer.conf`.
 
 ### Определение комбинации на фото
 

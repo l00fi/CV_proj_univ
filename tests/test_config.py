@@ -34,6 +34,7 @@ def test_config_from_default_yaml(default_config_path: Path, project_root: Path)
     assert config.augmentations.mixup == 0.2
     assert config.data_yaml == (project_root / "dataset" / "data.yaml").resolve()
     assert config.val_split == "test"
+    assert config.val_metric_conf == 0.001
     assert config.infer_source.name == "images"
 
 
@@ -120,7 +121,7 @@ def test_augmentation_fallback_from_train_section(tmp_path: Path, project_root: 
             "hsv_s": 0.5,
             "hsv_v": 0.3,
         },
-        "validate": {"conf": 0.25, "iou": 0.45, "split": "test"},
+        "validate": {"metric_conf": 0.001, "iou": 0.45, "split": "test"},
         "infer": {"conf": 0.35, "iou": 0.45, "save_dir": "runs/infer"},
         "mlflow": {
             "tracking_uri": "http://localhost:5000",

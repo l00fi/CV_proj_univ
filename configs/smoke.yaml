@@ -45,7 +45,7 @@ augmentations:
     gauss_noise: 0.08
 
 validate:
-  conf: 0.25
+  metric_conf: 0.001
   iou: 0.45
   split: test
 

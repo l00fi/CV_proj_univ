@@ -47,7 +47,7 @@ def save_sample_predictions(
         results = model.predict(
             source=str(image_path),
             imgsz=config.imgsz,
-            conf=config.infer_conf,
+            conf=config.val_metric_conf,
             iou=config.infer_iou,
             device=config.device,
             save=False,

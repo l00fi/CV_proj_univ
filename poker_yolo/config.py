@@ -52,7 +52,7 @@ class Config:
     warmup_epochs: int
     augmentations: AugmentationConfig
     reporting: ReportingConfig
-    val_conf: float
+    val_metric_conf: float
     val_iou: float
     val_split: str
     infer_conf: float
@@ -106,7 +106,7 @@ class Config:
             warmup_epochs=train["warmup_epochs"],
             augmentations=aug,
             reporting=reporting,
-            val_conf=validate["conf"],
+            val_metric_conf=float(validate.get("metric_conf", 0.001)),
             val_iou=validate["iou"],
             val_split=validate["split"],
             infer_conf=infer["conf"],

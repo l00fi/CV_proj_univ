@@ -76,7 +76,7 @@ def minimal_config_path(tmp_path: Path, project_root: Path) -> Path:
                 "gauss_noise": 0.1,
             },
         },
-        "validate": {"conf": 0.25, "iou": 0.45, "split": "test"},
+        "validate": {"metric_conf": 0.001, "iou": 0.45, "split": "test"},
         "infer": {"conf": 0.35, "iou": 0.45, "save_dir": str(tmp_path / "runs" / "infer")},
         "mlflow": {
             "tracking_uri": "http://localhost:5000",

@@ -302,7 +302,8 @@ uv run pytest
 |----------|---------|
 | `device=auto` без GPU | Автоматически → `cpu`; или `device: cpu` в YAML |
 | MLflow недоступен локально | `docker compose up -d mlflow` или `MLFLOW_TRACKING_URI=file:///./mlruns` |
-| Pushgateway HTTP 400 | Обновите код (дедупликация метрик); перезапустите `train` после `docker compose --profile observability up -d` |
+| Pushgateway HTTP 400 | Обновите код (дедупликация метрик); перезапустите `train` после observability stack |
+| val/test метрики = 0 в Grafana | Проверьте `validate.metric_conf: 0.001` (не `conf: 0.25`); перезапустите `train` |
 | Веса не найдены | `runs/detect/runs/train/<name>/weights/best.pt` |
 | Ultralytics путь сохранения | `runs/detect/runs/train/`, не `runs/train/` |
 | Нет места на диске (Windows) | `$env:TEMP="D:\tmp"` |

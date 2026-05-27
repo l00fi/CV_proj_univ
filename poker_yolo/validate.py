@@ -26,7 +26,7 @@ def run_validation(config: Config, weights: Path) -> tuple[dict[str, float], flo
         "validate.start",
         weights=str(weights),
         split=config.val_split,
-        conf=config.val_conf,
+        metric_conf=config.val_metric_conf,
         iou=config.val_iou,
     )
 
@@ -46,7 +46,7 @@ def run_validation(config: Config, weights: Path) -> tuple[dict[str, float], flo
         data=str(config.data_yaml),
         split=config.val_split,
         imgsz=config.imgsz,
-        conf=config.val_conf,
+        conf=config.val_metric_conf,
         iou=config.val_iou,
         device=config.device,
         verbose=True,
