@@ -42,6 +42,7 @@ def merge_hands_dataset(dataset_root: Path) -> None:
     raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8")) if data_yaml.exists() else {}
     names = raw.get("names", [])
     payload = {
+        "path": str(dataset_root.resolve()),
         "train": "test/images",
         "val": "test/images",
         "test": "test/images",

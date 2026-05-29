@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from poker_yolo.validate import extract_metrics
+from poker_yolo.ultralytics_metrics import extract_metrics
 
 
 def test_extract_metrics_full() -> None:

@@ -99,8 +99,17 @@ class ResourceMonitor:
 def compute_augmentation_summary(
     aug_config: Any,
     train_images: int,
+    *,
+    task: str = "classify",
 ) -> dict[str, Any]:
     """Estimate augmentation exposure vs real dataset size."""
+    if task == "classify":
+        return {
+            "train_images_real": train_images,
+            "augmentations_enabled": False,
+            "note": "Ultralytics classify uses built-in augmentations; YAML detect aug block is not applied.",
+        }
+
     yolo = aug_config.to_ultralytics_args()
     alb = dict(aug_config.albumentations)
 

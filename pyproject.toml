@@ -1,13 +1,12 @@
 [project]
 name = "poker-yolo"
 version = "0.1.0"
-description = "YOLOv8 training pipeline for poker card detection"
+description = "YOLOv8 classification pipeline for poker hand combinations"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "torch>=2.1.0",
     "torchvision>=0.16.0",
-    "pytorch-lightning>=2.2.0",
     "ultralytics>=8.3.0",
     "mlflow>=2.14.0",
     "pyyaml>=6.0",

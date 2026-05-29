@@ -15,7 +15,7 @@ def isolate_cli_and_reporting_env(request, mocker, monkeypatch) -> None:
     """Prevent CLI tests from hanging on Pushgateway / prediction export."""
     monkeypatch.delenv("PROMETHEUS_PUSHGATEWAY_URL", raising=False)
     if request.node.fspath.basename == "test_cli.py":
-        mocker.patch("poker_yolo.cli._enrich_report_after_train")
+        mocker.patch("poker_yolo.pipeline.enrich_report_after_train")
 
 
 @pytest.fixture
@@ -38,8 +38,9 @@ def minimal_config_path(tmp_path: Path, project_root: Path) -> Path:
             "yaml_path": str(data_yaml),
             "dataset_root": str(project_root / "dataset"),
         },
-        "model": {"weights": "yolov8n.pt", "imgsz": 640},
+        "model": {"task": "classify", "weights": "yolov8n-cls.pt", "imgsz": 640},
         "train": {
+            "preflight_cpu_epochs": 0,
             "epochs": 1,
             "batch": 2,
             "patience": 1,

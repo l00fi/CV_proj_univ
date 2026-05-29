@@ -133,9 +133,12 @@ def test_pushgateway_called_when_configured(tmp_path: Path, mocker) -> None:
 
     finalize_report(reporting, status="success")
 
-    mock_urlopen.assert_called_once()
-    request = mock_urlopen.call_args[0][0]
-    assert request.full_url == "http://pushgateway:9091/metrics/job/poker_yolo/instance/main"
+    assert mock_urlopen.call_count == 2
+    delete_request = mock_urlopen.call_args_list[0][0][0]
+    post_request = mock_urlopen.call_args_list[1][0][0]
+    assert delete_request.get_method() == "DELETE"
+    assert post_request.get_method() == "POST"
+    assert post_request.full_url == "http://pushgateway:9091/metrics/job/poker_yolo/instance/main"
 
 
 def test_finalize_report_raises_without_session() -> None:

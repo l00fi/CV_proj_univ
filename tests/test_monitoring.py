@@ -31,12 +31,20 @@ def test_compute_augmentation_summary() -> None:
         copy_paste=0.3,
         albumentations={"blur": 0.1, "brightness_contrast": 0.5},
     )
-    summary = compute_augmentation_summary(config, train_images=109)
+    summary = compute_augmentation_summary(config, train_images=109, task="detect")
     assert summary["train_images_real"] == 109
     assert summary["synthetic_to_real_ratio"] > 0
     assert summary["estimated_augmented_views_per_epoch"] > 109
     assert "mosaic" in summary["yolo_probabilities"]
     assert summary["albumentations_transforms_count"] == 2
+
+
+def test_compute_augmentation_summary_classify_skips_detect_block() -> None:
+    config = AugmentationConfig(mosaic=1.0, mixup=0.2)
+    summary = compute_augmentation_summary(config, train_images=50, task="classify")
+    assert summary["train_images_real"] == 50
+    assert summary["augmentations_enabled"] is False
+    assert "synthetic_to_real_ratio" not in summary
 
 
 def test_compute_dataset_stats(project_root) -> None:

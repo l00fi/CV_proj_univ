@@ -1,0 +1,329 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Training curves",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-curves/poker-yolo-training-curves"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Benchmark & inference",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-inference/poker-yolo-benchmark-inference"
+    }
+  ],
+  "panels": [
+    {
+      "type": "text",
+      "title": "Training",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "mode": "html",
+        "content": "<h3>Метрики обучения</h3><p>CPU/RAM, длительность и итоговые MRPH val — из Pushgateway (последний успешный train).</p><p><a href=\"/d/poker-yolo-curves/poker-yolo-training-curves\">→ Кривые loss / accuracy</a> · <a href=\"/d/poker-yolo-inference/poker-yolo-benchmark-inference\">→ Benchmark & inference</a></p>"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 2
+      },
+      "id": 20,
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_train_cpu_avg_pct{status=\"success\"}[7d]))",
+          "legendFormat": "Train CPU avg",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_val_cpu_avg_pct{status=\"success\"}[7d]))",
+          "legendFormat": "Val CPU avg",
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Resource Utilization (CPU)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "decmbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 2
+      },
+      "id": 21,
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_train_ram_avg_mb{status=\"success\"}[7d]))",
+          "legendFormat": "Train RAM avg",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_val_ram_avg_mb{status=\"success\"}[7d]))",
+          "legendFormat": "Val RAM avg",
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Memory Footprint",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 8
+      },
+      "id": 1,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_val_top1{status=\"success\"}[7d]))",
+          "legendFormat": "MRPH val top-1",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "MRPH validation top-1",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 8
+      },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_train_duration_sec{status=\"success\"}[7d]))",
+          "legendFormat": "Train",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_pipeline_duration_sec{status=\"success\"}[7d]))",
+          "legendFormat": "Pipeline",
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Durations",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_val_top1{status=\"success\"}[7d]))",
+          "legendFormat": "Val top-1",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_val_top5{status=\"success\"}[7d]))",
+          "legendFormat": "Val top-5",
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "MRPH val metrics (latest epoch)",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "poker-yolo",
+    "ml"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "http://localhost:8088",
+          "value": "http://localhost:8088"
+        },
+        "hide": 0,
+        "label": "Report server (preview images)",
+        "name": "report_server",
+        "options": [
+          {
+            "selected": true,
+            "text": "http://localhost:8088",
+            "value": "http://localhost:8088"
+          }
+        ],
+        "query": "http://localhost:8088",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Poker YOLO — Training",
+  "uid": "poker-yolo-training",
+  "version": 1
+}

@@ -1,18 +1,27 @@
-# YOLOv8 training configuration for poker card detection
+# YOLOv8 classification — poker hand combinations (10 classes)
 
 data:
   yaml_path: dataset/kaggle/data.yaml
   dataset_root: dataset/kaggle
 
+benchmark:
+  yaml_path: dataset/data.yaml
+  dataset_root: dataset
+
 model:
-  weights: yolov8n.pt
+  task: classify
+  weights: yolov8n-cls.pt
   imgsz: 640
 
 train:
+  # CPU smoke before GPU training (0 = skip). Verifies dataset + pipeline without peak VRAM.
+  preflight_cpu_epochs: 1
   epochs: 50
   batch: 8
   patience: 15
   device: auto
+  # Cap GPU VRAM/power; RAM via Docker POKER_YOLO_MEM_LIMIT + fewer DataLoader workers (~20% headroom).
+  gpu_resource_fraction: 0.8
   workers: 4
   project: runs/train
   name: poker_cards
@@ -66,7 +75,7 @@ infer:
   conf: 0.35
   iou: 0.45
   save_dir: runs/infer
-  source: dataset
+  source: dataset/test/images
 
 mlflow:
   tracking_uri: http://mlflow:5000

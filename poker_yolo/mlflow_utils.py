@@ -74,31 +74,11 @@ def log_metrics(metrics: dict[str, float], step: int | None = None) -> None:
 def log_ultralytics_results(results: Any, prefix: str = "") -> None:
     if results is None:
         return
+    from poker_yolo.ultralytics_metrics import metrics_for_mlflow
 
-    box = getattr(results, "box", None)
-    if box is None:
-        return
-
-    metric_map = {
-        "map50": getattr(box, "map50", None),
-        "map": getattr(box, "map", None),
-        "precision": getattr(box, "mp", None),
-        "recall": getattr(box, "mr", None),
-    }
-    logged = {}
-    for name, value in metric_map.items():
-        if value is not None:
-            key = f"{prefix}{name}" if prefix else name
-            logged[key] = float(value)
-
+    logged = metrics_for_mlflow(results, prefix=prefix)
     if logged:
         mlflow.log_metrics(logged)
-
-    maps = getattr(box, "maps", None)
-    if maps is not None:
-        per_class = {f"class_map_{i}": float(v) for i, v in enumerate(maps) if v is not None}
-        if per_class:
-            mlflow.log_metrics(per_class)
 
 
 def log_artifact_dir(directory: Path, artifact_path: str | None = None) -> None:

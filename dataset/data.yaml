@@ -1,3 +1,4 @@
+path: D:\Work\Projects\poker-yolo\dataset
 train: test/images
 val: test/images
 test: test/images
@@ -56,3 +57,4 @@ names:
 - QH
 - QS
 purpose: hands_evaluation
+valid: test/images

@@ -19,26 +19,21 @@ PUSHGATEWAY_JOB = "poker_yolo"
 PUSHGATEWAY_INSTANCE = "main"
 _METRIC_NAME_RE = re.compile(r"^[a-zA-Z_:][a-zA-Z0-9_:]*$")
 
-# Metric names expected by observability/grafana/provisioning/dashboards/poker-yolo.json
+# Metric names expected by observability/grafana/provisioning/dashboards/poker-yolo-*.json
 GRAFANA_METRICS: tuple[str, ...] = (
     "poker_yolo_train_cpu_avg_pct",
     "poker_yolo_val_cpu_avg_pct",
-    "poker_yolo_train_gpu_util_avg_pct",
-    "poker_yolo_val_gpu_util_avg_pct",
     "poker_yolo_train_ram_avg_mb",
     "poker_yolo_val_ram_avg_mb",
-    "poker_yolo_train_gpu_mem_peak_mb",
-    "poker_yolo_val_map50",
+    "poker_yolo_val_top1",
+    "poker_yolo_val_top5",
     "poker_yolo_train_duration_sec",
-    "poker_yolo_val_duration_sec",
     "poker_yolo_pipeline_duration_sec",
-    "poker_yolo_synthetic_to_real_ratio",
-    "poker_yolo_estimated_augmented_views_per_epoch",
-    "poker_yolo_model_size_mb",
-    "poker_yolo_val_precision",
-    "poker_yolo_val_recall",
-    "poker_yolo_val_f1",
-    "poker_yolo_train_map50",
+    "poker_yolo_hands_benchmark_top1_conf_avg",
+    "poker_yolo_hands_benchmark_accuracy",
+    "poker_yolo_hands_benchmark_evaluated_images",
+    "poker_yolo_hands_benchmark_correct_total",
+    "poker_yolo_hands_benchmark_incorrect_total",
     "poker_yolo_run_duration_seconds",
     "poker_yolo_run_info",
 )
@@ -50,15 +45,6 @@ OBSERVABILITY_SERVICES: dict[str, dict[str, str | int]] = {
     "grafana": {"port_env": "GRAFANA_PORT", "profile": "observability"},
     "report-server": {"port_env": "REPORT_SERVER_PORT", "profile": "observability"},
 }
-
-
-def collect_export_metrics(report: RunReport) -> dict[str, float]:
-    """Merge report fields without duplicates (resources are also copied into production/metrics)."""
-    merged: dict[str, float] = {}
-    merged.update(report.resources)
-    merged.update(report.production)
-    merged.update(report.metrics)
-    return merged
 
 
 def sanitize_prometheus_name(name: str) -> str:
@@ -138,12 +124,15 @@ def push_to_pushgateway(
         return message
 
     url = pushgateway_url(base_url)
-    request = urllib.request.Request(url, data=body, method="POST")
-    request.add_header("Content-Type", "text/plain; version=0.0.4")
-
     last_error: str | None = None
     for attempt in range(1, retries + 1):
         try:
+            # Replace the whole job/instance group so Grafana never mixes stale run_id labels.
+            clear = urllib.request.Request(url, method="DELETE")
+            with urllib.request.urlopen(clear, timeout=timeout_sec):
+                pass
+            request = urllib.request.Request(url, data=body, method="POST")
+            request.add_header("Content-Type", "text/plain; version=0.0.4")
             with urllib.request.urlopen(request, timeout=timeout_sec) as response:
                 if response.status >= 400:
                     raise urllib.error.URLError(f"HTTP {response.status}")

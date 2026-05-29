@@ -53,6 +53,9 @@ HAND_NAMES_RU: dict[str, str] = {
     "royal_flush": "Роял-флеш",
 }
 
+# Canonical order for Grafana bar chart / confusion matrix (10 combo classes).
+COMBO_CLASSES: tuple[str, ...] = tuple(HAND_NAMES_RU.keys())
+
 
 @dataclass(frozen=True)
 class Card:
@@ -95,16 +98,6 @@ class HandValidationError:
 
 def parse_card_label(label: str) -> Card:
     return Card.parse(label)
-
-
-def dedupe_detections(detections: Iterable[tuple[str, float]]) -> list[tuple[str, float]]:
-    """Keep highest-confidence detection per unique card label."""
-    best: dict[str, float] = {}
-    for label, confidence in detections:
-        name = label.strip().upper()
-        if name not in best or confidence > best[name]:
-            best[name] = confidence
-    return sorted(best.items(), key=lambda item: (-item[1], item[0]))
 
 
 def validate_hand_cards(labels: Iterable[str]) -> HandValidationError | None:
@@ -227,8 +220,3 @@ def _rank_by_count(rank_counts: Counter[int], count: int) -> int:
 
 def _rank_name_ru(rank: int) -> str:
     return RANK_NAMES_RU[rank]
-
-
-def format_cards_ru(cards: Iterable[Card | str]) -> str:
-    parsed = [c if isinstance(c, Card) else parse_card_label(c) for c in cards]
-    return ", ".join(c.display() for c in parsed)

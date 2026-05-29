@@ -4,15 +4,23 @@ data:
   yaml_path: dataset/kaggle/data.yaml
   dataset_root: dataset/kaggle
 
+# Hands benchmark (Roboflow): post-train validate + infer + Grafana preview
+benchmark:
+  yaml_path: dataset/data.yaml
+  dataset_root: dataset
+
 model:
-  weights: yolov8n.pt
+  task: classify
+  weights: yolov8n-cls.pt
   imgsz: 640
 
 train:
-  epochs: 3
+  preflight_cpu_epochs: 1
+  epochs: 5
   batch: 4
   patience: 5
   device: auto
+  gpu_resource_fraction: 0.8
   workers: 2
   project: runs/train
   name: poker_cards
@@ -61,7 +69,7 @@ infer:
   conf: 0.25
   iou: 0.45
   save_dir: runs/infer
-  source: dataset
+  source: dataset/test/images
 
 mlflow:
   tracking_uri: http://localhost:5000

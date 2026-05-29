@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from poker_yolo.config import Config
+from poker_yolo.config import Config, classify_weights_path, mlflow_ui_url, resolve_mlflow_uri
 
 
 def test_device_auto_resolves_to_cpu_without_cuda(default_config_path: Path, project_root: Path, mocker) -> None:
@@ -33,20 +33,33 @@ def test_poker_yolo_device_env_overrides_cuda_probe(
     assert config.device == "0"
 
 
+def test_benchmark_section_overrides_val_and_infer_paths(
+    default_config_path: Path, project_root: Path,
+) -> None:
+    config = Config.from_yaml(default_config_path, project_root=project_root)
+    assert config.val_data_yaml == (project_root / "dataset" / "data.yaml").resolve()
+    assert config.val_dataset_root == (project_root / "dataset").resolve()
+    assert config.infer_source == (project_root / "dataset" / "test" / "images").resolve()
+
+
 def test_config_from_default_yaml(default_config_path: Path, project_root: Path) -> None:
     config = Config.from_yaml(default_config_path, project_root=project_root)
 
-    assert config.model_weights == "yolov8n.pt"
+    assert config.task == "classify"
+    assert config.model_weights == "yolov8n-cls.pt"
     assert config.imgsz == 640
     assert config.epochs == 50
+    assert config.gpu_resource_fraction == 0.8
     assert config.augmentations.enabled is True
     assert config.augmentations.mosaic == 1.0
     assert config.augmentations.mixup == 0.2
     assert config.data_yaml == (project_root / "dataset" / "kaggle" / "data.yaml").resolve()
     assert config.dataset_root == (project_root / "dataset" / "kaggle").resolve()
+    assert config.val_data_yaml == (project_root / "dataset" / "data.yaml").resolve()
+    assert config.val_dataset_root == (project_root / "dataset").resolve()
     assert config.val_split == "val"
     assert config.val_metric_conf == 0.001
-    assert config.infer_source.name == "images"
+    assert config.infer_source == (project_root / "dataset" / "test" / "images").resolve()
 
 
 def test_config_from_minimal_yaml(minimal_config_path: Path, project_root: Path) -> None:
@@ -66,15 +79,29 @@ def test_mlflow_tracking_uri_env_override(minimal_config_path: Path, project_roo
     assert config.mlflow_tracking_uri == "http://custom:5000"
 
 
+def test_mlflow_uri_maps_docker_hostname_to_localhost_on_host(
+    minimal_config_path: Path, project_root: Path, monkeypatch, mocker,
+) -> None:
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
+    monkeypatch.setenv("MLFLOW_PORT", "5001")
+    mocker.patch("poker_yolo.config.Path.is_file", return_value=False)
+    assert resolve_mlflow_uri("http://mlflow:5000") == "http://localhost:5001"
+    assert mlflow_ui_url("http://mlflow:5000") == "http://localhost:5001"
+
+
+def test_classify_weights_path_matches_ultralytics_layout() -> None:
+    path = classify_weights_path("runs/train", "poker_cards")
+    assert path == Path("runs/classify/runs/train/poker_cards/weights/best.pt")
+
+
 def test_train_args_include_ultralytics_augmentations(minimal_config_path: Path, project_root: Path) -> None:
     config = Config.from_yaml(minimal_config_path, project_root=project_root)
     args = config.train_args()
 
-    assert args["mosaic"] == 1.0
-    assert args["mixup"] == 0.1
-    assert args["copy_paste"] == 0.2
-    assert args["cutmix"] == 0.05
-    assert args["data"] == str(config.data_yaml)
+    assert args["task"] == "classify"
+    assert "mosaic" not in args
+    assert "mixup" not in args
+    assert args["data"] == str(config.dataset_root)
     assert args["pretrained"] is True
 
 
@@ -82,8 +109,7 @@ def test_train_args_include_albumentations_when_enabled(minimal_config_path: Pat
     config = Config.from_yaml(minimal_config_path, project_root=project_root)
     args = config.train_args()
 
-    assert "augmentations" in args
-    assert len(args["augmentations"]) == 3
+    assert "augmentations" not in args
 
 
 def test_train_args_skip_albumentations_when_disabled(minimal_config_path: Path, project_root: Path) -> None:
@@ -100,6 +126,25 @@ def test_train_args_skip_albumentations_when_disabled(minimal_config_path: Path,
     assert "augmentations" not in args
 
 
+def test_train_args_include_detect_augmentations_when_task_detect(
+    minimal_config_path: Path, project_root: Path,
+) -> None:
+    import yaml
+
+    raw = yaml.safe_load(minimal_config_path.read_text(encoding="utf-8"))
+    raw["model"]["task"] = "detect"
+    detect_path = minimal_config_path.parent / "detect.yaml"
+    detect_path.write_text(yaml.dump(raw), encoding="utf-8")
+
+    config = Config.from_yaml(detect_path, project_root=project_root)
+    args = config.train_args()
+
+    assert args["task"] == "detect"
+    assert args["mosaic"] == 1.0
+    assert args["mixup"] == 0.1
+    assert "augmentations" in args
+
+
 def test_augmentation_fallback_from_train_section(tmp_path: Path, project_root: Path) -> None:
     import yaml
 
@@ -108,7 +153,7 @@ def test_augmentation_fallback_from_train_section(tmp_path: Path, project_root: 
             "yaml_path": str(project_root / "dataset" / "data.yaml"),
             "dataset_root": str(project_root / "dataset"),
         },
-        "model": {"weights": "yolov8n.pt", "imgsz": 640},
+        "model": {"task": "detect", "weights": "yolov8n.pt", "imgsz": 640},
         "train": {
             "epochs": 1,
             "batch": 2,

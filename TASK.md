@@ -34,7 +34,7 @@
 | Окружение | Python ≥ 3.11, [uv](https://docs.astral.sh/uv/) |
 | Деплой | Docker Compose (пайплайн + MLflow + observability) |
 
-Базовая модель: `yolov8n.pt` (nano). При наличии GPU — `yolov8s/m/l`.
+Базовая модель: `yolov8n-cls.pt` (nano, classification). При наличии GPU — `yolov8s-cls` / `yolov8m-cls`.
 
 ---
 

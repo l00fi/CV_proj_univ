@@ -7,7 +7,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from poker_yolo.cli import _default_weights, build_parser, main
+from poker_yolo.cli import build_parser, main
+from poker_yolo.infer import InferenceRun
+from poker_yolo.paths import default_weights
 
 
 def test_build_parser_subcommands() -> None:
@@ -28,15 +30,24 @@ def test_build_parser_subcommands() -> None:
     assert args.source == Path("images/")
     assert args.no_save is True
 
+    args = parser.parse_args(["infer", "--weights", "model.pt"])
+    assert args.command == "infer"
+    assert args.weights == Path("model.pt")
+    assert args.source is None
+
 
 def test_main_train_dispatches_training_and_validation(
     minimal_config_path, mocker,
 ) -> None:
     mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
+    mocker.patch("poker_yolo.cli.run_preflight_cpu_smoke")
     mock_train = mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mock_val = mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
-    mock_infer = mocker.patch("poker_yolo.cli.run_inference", return_value=Path("runs/infer/pred_1"))
-    mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mock_infer = mocker.patch(
+        "poker_yolo.cli.run_inference",
+        return_value=InferenceRun(Path("runs/infer/pred_1"), []),
+    )
+    mocker.patch("poker_yolo.pipeline.enrich_report_after_train")
     mocker.patch("poker_yolo.cli._print_results_summary")
     mocker.patch("poker_yolo.cli.setup_logging")
 
@@ -61,7 +72,7 @@ def test_main_validate_with_weights(minimal_config_path, tmp_path, mocker) -> No
     weights = tmp_path / "best.pt"
     weights.write_bytes(b"fake")
     mock_val = mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 1.0))
-    mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch("poker_yolo.pipeline.enrich_report_after_train")
     mocker.patch("poker_yolo.cli.setup_logging")
 
     code = main(["--config", str(minimal_config_path), "validate", "--weights", str(weights)])
@@ -90,7 +101,10 @@ def test_main_infer_success(minimal_config_path, tmp_path, project_root, mocker)
     if not source.exists():
         pytest.skip("Test images not available")
 
-    mock_infer = mocker.patch("poker_yolo.cli.run_inference", return_value=tmp_path / "pred")
+    mock_infer = mocker.patch(
+        "poker_yolo.cli.run_inference",
+        return_value=InferenceRun(tmp_path / "pred", []),
+    )
     mocker.patch("poker_yolo.cli.setup_logging")
     code = main([
         "--config", str(minimal_config_path),
@@ -103,10 +117,11 @@ def test_main_infer_success(minimal_config_path, tmp_path, project_root, mocker)
 
 def test_main_train_skips_infer_when_requested(minimal_config_path, mocker) -> None:
     mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
+    mocker.patch("poker_yolo.cli.run_preflight_cpu_smoke")
     mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
     mock_infer = mocker.patch("poker_yolo.cli.run_inference")
-    mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch("poker_yolo.pipeline.enrich_report_after_train")
     mocker.patch("poker_yolo.cli._print_results_summary")
     mocker.patch("poker_yolo.cli.setup_logging")
 
@@ -118,11 +133,15 @@ def test_main_train_skips_infer_when_requested(minimal_config_path, mocker) -> N
 
 def test_main_creates_final_report(minimal_config_path, tmp_path, mocker) -> None:
     mocker.patch("poker_yolo.cli.ensure_dataset_if_needed")
+    mocker.patch("poker_yolo.cli.run_preflight_cpu_smoke")
     mocker.patch("poker_yolo.cli.setup_logging")
     mocker.patch("poker_yolo.cli.run_training", return_value=(Path("best.pt"), 10.0))
     mocker.patch("poker_yolo.cli.run_validation", return_value=({"map50": 0.5}, 2.0))
-    mocker.patch("poker_yolo.cli.run_inference", return_value=tmp_path / "pred")
-    mocker.patch("poker_yolo.cli._enrich_report_after_train")
+    mocker.patch(
+        "poker_yolo.cli.run_inference",
+        return_value=InferenceRun(tmp_path / "pred", []),
+    )
+    mocker.patch("poker_yolo.pipeline.enrich_report_after_train")
     mocker.patch("poker_yolo.cli._print_results_summary")
 
     main(["--config", str(minimal_config_path), "train"])
@@ -147,4 +166,4 @@ def test_default_weights_fallback(minimal_config_path, project_root, tmp_path) -
     best.write_bytes(b"x")
 
     config.project = str(tmp_path / "runs" / "train")
-    assert _default_weights(config) == best
+    assert default_weights(config) == best

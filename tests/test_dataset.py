@@ -6,6 +6,8 @@ from pathlib import Path
 
 import yaml
 
+from poker_yolo.kaggle_dataset import ensure_hands_data_yaml
+
 
 def test_data_yaml_exists_and_has_52_classes(project_root: Path) -> None:
     data_yaml = project_root / "dataset" / "data.yaml"
@@ -16,6 +18,17 @@ def test_data_yaml_exists_and_has_52_classes(project_root: Path) -> None:
     assert len(raw["names"]) == 52
     assert "AC" in raw["names"]
     assert "10S" in raw["names"]
+
+
+def test_ensure_hands_data_yaml_sets_path_to_yaml_parent(tmp_path: Path) -> None:
+    data_yaml = tmp_path / "data.yaml"
+    data_yaml.write_text(
+        "path: .\ntrain: test/images\nval: test/images\ntest: test/images\nnc: 1\nnames: [a]\n",
+        encoding="utf-8",
+    )
+    ensure_hands_data_yaml(data_yaml)
+    raw = yaml.safe_load(data_yaml.read_text(encoding="utf-8"))
+    assert raw["path"] == str(tmp_path.resolve())
 
 
 def test_hands_data_yaml_paths_exist(project_root: Path) -> None:

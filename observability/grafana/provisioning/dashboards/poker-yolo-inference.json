@@ -1,0 +1,521 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Training metrics",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-training/poker-yolo-training"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Training curves",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-curves/poker-yolo-training-curves"
+    }
+  ],
+  "panels": [
+    {
+      "type": "text",
+      "title": "Hands benchmark",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "mode": "html",
+        "content": "<h3>Бенчмарк: <code>dataset/test/images</code></h3><p>Истинные метки комбинаций карт YOLO: (<code>evaluate_hand</code>). Previews: <code>${report_server}/preview/</code>.</p><p><a href=\"/d/poker-yolo-training/poker-yolo-training\">→ Метрики обучения</a> · <a href=\"/d/poker-yolo-curves/poker-yolo-training-curves\">→ Кривые loss / accuracy</a></p>"
+      }
+    },
+    {
+      "type": "text",
+      "title": "Sample 0 — dataset/test/images",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 2
+      },
+      "id": 10,
+      "options": {
+        "mode": "html",
+        "content": "<img src=\"${report_server}/preview/sample_0.jpg\" width=\"100%\" alt=\"sample 0\"/><p style=\"font-size:12px\">Random frame from hands benchmark</p>"
+      }
+    },
+    {
+      "type": "text",
+      "title": "Sample 1 — dataset/test/images",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 8,
+        "y": 2
+      },
+      "id": 11,
+      "options": {
+        "mode": "html",
+        "content": "<img src=\"${report_server}/preview/sample_1.jpg\" width=\"100%\" alt=\"sample 1\"/>"
+      }
+    },
+    {
+      "type": "text",
+      "title": "Sample 2 — dataset/test/images",
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 2
+      },
+      "id": 12,
+      "options": {
+        "mode": "html",
+        "content": "<img src=\"${report_server}/preview/sample_2.jpg\" width=\"100%\" alt=\"sample 2\"/>"
+      }
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 16,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_hands_benchmark_top1_conf_avg{status=\"success\"}[7d]))",
+          "legendFormat": "Avg top-1 confidence",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Avg prediction confidence",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "id": 18,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_hands_benchmark_accuracy{status=\"success\"}[7d]))",
+          "legendFormat": "Top-1 accuracy on benchmark",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Benchmark accuracy (labeled hands)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 19,
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "expr": "max by () (last_over_time(poker_yolo_hands_benchmark_correct_total{status=\"success\"}[7d]))",
+          "legendFormat": "Correct",
+          "refId": "A",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_hands_benchmark_incorrect_total{status=\"success\"}[7d]))",
+          "legendFormat": "Incorrect",
+          "refId": "B",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        },
+        {
+          "expr": "max by () (last_over_time(poker_yolo_hands_benchmark_evaluated_images{status=\"success\"}[7d]))",
+          "legendFormat": "Evaluated",
+          "refId": "C",
+          "instant": true,
+          "range": false,
+          "editorMode": "code",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          }
+        }
+      ],
+      "title": "Benchmark correct / incorrect",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "reports"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "correct"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "incorrect"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 17,
+      "options": {
+        "barRadius": 0.05,
+        "barWidth": 0.85,
+        "fullHighlight": false,
+        "groupWidth": 0.85,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xField": "hand_class",
+        "xTickLabelRotation": -35
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "reports"
+          },
+          "filters": [],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$type($) = \"array\" ? $ : $.rows",
+          "source": "url",
+          "type": "json",
+          "url": "http://report-server:8088/grafana/benchmark_outcomes.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Predictions by true hand (correct vs incorrect)",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "hand_index"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "reports"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "#5794F2",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "id": 103,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "frameIndex": 0,
+        "showHeader": true,
+        "sortBy": []
+      },
+      "targets": [
+        {
+          "columns": [],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "reports"
+          },
+          "filters": [],
+          "format": "table",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$type($) = \"array\" ? $ : $.rows",
+          "source": "url",
+          "type": "json",
+          "url": "http://report-server:8088/grafana/confusion_matrix.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Confusion matrix (true hand → predicted)",
+      "transformations": [
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "true_index"
+              },
+              {
+                "desc": false,
+                "field": "pred_index"
+              }
+            ]
+          }
+        },
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "pred_class",
+            "emptyValue": 0,
+            "rowField": "true_class",
+            "valueField": "count"
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "high_card": 0,
+              "pair": 1,
+              "two_pair": 2,
+              "three_of_a_kind": 3,
+              "straight": 4,
+              "flush": 5,
+              "full_house": 6,
+              "four_of_a_kind": 7,
+              "straight_flush": 8,
+              "royal_flush": 9
+            },
+            "renameByName": {
+              "true_class": "true \\ pred"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "poker-yolo",
+    "ml"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "http://localhost:8088",
+          "value": "http://localhost:8088"
+        },
+        "hide": 0,
+        "label": "Report server (preview images)",
+        "name": "report_server",
+        "options": [
+          {
+            "selected": true,
+            "text": "http://localhost:8088",
+            "value": "http://localhost:8088"
+          }
+        ],
+        "query": "http://localhost:8088",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Poker YOLO — Benchmark & Inference",
+  "uid": "poker-yolo-inference",
+  "version": 1
+}

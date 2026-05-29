@@ -5,7 +5,8 @@ data:
   dataset_root: dataset
 
 model:
-  weights: yolov8n.pt
+  task: classify
+  weights: yolov8n-cls.pt
   imgsz: 640
 
 train:

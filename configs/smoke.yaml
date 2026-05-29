@@ -4,11 +4,17 @@ data:
   yaml_path: dataset/kaggle/data.yaml
   dataset_root: dataset/kaggle
 
+benchmark:
+  yaml_path: dataset/data.yaml
+  dataset_root: dataset
+
 model:
-  weights: yolov8n.pt
+  task: classify
+  weights: yolov8n-cls.pt
   imgsz: 640
 
 train:
+  preflight_cpu_epochs: 0
   epochs: 3
   batch: 4
   patience: 3
@@ -47,13 +53,13 @@ augmentations:
 validate:
   metric_conf: 0.001
   iou: 0.45
-  split: test
+  split: val
 
 infer:
   conf: 0.35
   iou: 0.45
   save_dir: runs/infer
-  source: dataset/kaggle/test/images
+  source: dataset/test/images
 
 mlflow:
   tracking_uri: http://localhost:5000

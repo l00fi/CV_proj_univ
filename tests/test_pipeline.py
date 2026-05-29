@@ -6,10 +6,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-import pytest
-
 from poker_yolo.config import Config
-from poker_yolo.infer import run_inference
+from poker_yolo.infer import InferenceRun, run_inference
 from poker_yolo.train import run_training
 from poker_yolo.validate import run_validation
 
@@ -33,7 +31,7 @@ def test_run_training_logs_to_mlflow_and_returns_best_weights(
     mocker.patch("poker_yolo.validate.YOLO", mock_yolo_cls)
     mock_model.train.return_value = SimpleNamespace(
         save_dir=str(save_dir),
-        box=SimpleNamespace(map50=0.75, map=0.55, mp=0.8, mr=0.7),
+        results_dict={"metrics/accuracy_top1": 0.75, "metrics/accuracy_top5": 0.9},
     )
 
     config = Config.from_yaml(minimal_config_path, project_root=project_root)
@@ -43,8 +41,8 @@ def test_run_training_logs_to_mlflow_and_returns_best_weights(
     assert duration >= 0.0
     mock_model.train.assert_called_once()
     train_kwargs = mock_model.train.call_args.kwargs
-    assert "augmentations" in train_kwargs
-    assert train_kwargs["mosaic"] == 1.0
+    assert train_kwargs["task"] == "classify"
+    assert "augmentations" not in train_kwargs
     assert mock_model.add_callback.call_count == 4
 
 
@@ -56,18 +54,19 @@ def test_run_validation_calls_yolo_val(
 
     mock_model = MagicMock()
     mock_model.val.return_value = SimpleNamespace(
-        box=SimpleNamespace(map50=0.9, map=0.7, mp=0.88, mr=0.82),
+        results_dict={"metrics/accuracy_top1": 0.9, "metrics/accuracy_top5": 0.97, "val/loss": 0.2},
     )
     mocker.patch("poker_yolo.validate.YOLO", return_value=mock_model)
 
     config = Config.from_yaml(minimal_config_path, project_root=project_root)
     metrics, val_duration = run_validation(config, weights)
 
-    assert metrics["map50"] == 0.9
+    assert metrics["top1"] == 0.9
     assert val_duration >= 0.0
-    assert metrics["f1"] == pytest.approx(2 * 0.88 * 0.82 / (0.88 + 0.82))
+    assert metrics["top5"] == 0.97
     mock_model.val.assert_called_once_with(
-        data=str(config.data_yaml),
+        task=config.task,
+        data=str(config.dataset_root),
         split="test",
         imgsz=config.imgsz,
         conf=config.val_metric_conf,
@@ -87,6 +86,7 @@ def test_run_inference_returns_output_dir(
 
     mock_result = MagicMock()
     mock_result.save_dir = str(tmp_path / "pred")
+    mock_result.path = str(source)
     mock_model = MagicMock()
     mock_model.predict.return_value = [mock_result]
     mocker.patch("poker_yolo.infer.YOLO", return_value=mock_model)
@@ -95,7 +95,8 @@ def test_run_inference_returns_output_dir(
     config = Config.from_yaml(minimal_config_path, project_root=project_root)
     output = run_inference(config, weights, source, save=True)
 
-    assert output.name == "pred_12345"
+    assert output.output_dir.name == "pred_12345"
+    assert len(output.results) == 1
     mock_model.predict.assert_called_once()
     predict_kwargs = mock_model.predict.call_args.kwargs
     assert predict_kwargs["conf"] == config.infer_conf

@@ -43,6 +43,8 @@ services:
     gpus: all
     # PyTorch DataLoader uses /dev/shm; Docker default (64MB) is too small for YOLO + workers
     shm_size: "8gb"
+    # Optional hard RAM cap (~80% of host): set POKER_YOLO_MEM_LIMIT=12g in .env (run_full_train.ps1 sets it)
+    mem_limit: ${POKER_YOLO_MEM_LIMIT:-12g}
 
   # Optional observability stack (Grafana + Prometheus + Pushgateway):
   #   docker compose --profile observability up -d
@@ -97,10 +99,12 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
       GF_USERS_DEFAULT_THEME: ${GRAFANA_THEME}
+      GF_INSTALL_PLUGINS: yesoreyeram-infinity-datasource
     profiles:
       - observability
     depends_on:
       - prometheus
+      - report-server
     restart: unless-stopped
 
 volumes:

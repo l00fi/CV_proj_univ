@@ -56,9 +56,10 @@ def test_log_ultralytics_results_with_prefix(mock_mlflow, mocker) -> None:
     log_ultralytics_results(results, prefix="val_")
 
     calls = mlflow_utils.mlflow.log_metrics.call_args_list
-    assert len(calls) == 2
-    assert calls[0][0][0]["val_map50"] == 0.8
-    assert calls[1][0][0]["class_map_0"] == 0.7
+    assert len(calls) == 1
+    metrics = calls[0][0][0]
+    assert metrics["val_map50"] == 0.8
+    assert metrics["val_class_map_0"] == 0.7
 
 
 def test_log_json_artifact_writes_and_cleans_up(mock_mlflow, mocker, tmp_path, monkeypatch) -> None:

@@ -1,0 +1,430 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Training metrics",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-training/poker-yolo-training"
+    },
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": [],
+      "targetBlank": false,
+      "title": "Benchmark & inference",
+      "tooltip": "",
+      "type": "link",
+      "url": "/d/poker-yolo-inference/poker-yolo-benchmark-inference"
+    }
+  ],
+  "panels": [
+    {
+      "type": "text",
+      "title": "Training curves",
+      "id": 100,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "html",
+        "content": "<h3>Кривые обучения</h3><p>Данные из <code>runs/reports/grafana/training_curves.json</code>; ось X — <strong>номер эпохи</strong>.</p><p><a href=\"/d/poker-yolo-training/poker-yolo-training\">→ Метрики обучения (CPU, RAM, длительность)</a> · <a href=\"/d/poker-yolo-inference/poker-yolo-benchmark-inference\">→ Benchmark & inference</a></p>"
+      }
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "reports"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true,
+            "axisLabel": ""
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epoch"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Эпоха"
+              },
+              {
+                "id": "custom",
+                "value": {
+                  "axisLabel": "Эпоха",
+                  "axisPlacement": "bottom",
+                  "axisSoftMin": 0,
+                  "hideFrom": {
+                    "legend": true,
+                    "tooltip": false,
+                    "viz": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "custom",
+                "value": {
+                  "hideFrom": {
+                    "legend": true,
+                    "tooltip": false,
+                    "viz": true
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 2
+      },
+      "id": 101,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        },
+        "xField": "epoch"
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "time",
+              "text": "time",
+              "type": "timestamp",
+              "timestampFormat": "RFC3339"
+            },
+            {
+              "selector": "epoch",
+              "text": "epoch",
+              "type": "number"
+            },
+            {
+              "selector": "train_loss",
+              "text": "train_loss",
+              "type": "number"
+            },
+            {
+              "selector": "val_loss",
+              "text": "val_loss",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "reports"
+          },
+          "filters": [],
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$type($) = \"array\" ? $ : $.rows",
+          "source": "url",
+          "type": "json",
+          "url": "http://report-server:8088/grafana/training_curves.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Loss (train vs validation)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "epoch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "train_loss"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "val_loss"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "epoch"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "yesoreyeram-infinity-datasource",
+        "uid": "reports"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "drawStyle": "line",
+            "fillOpacity": 8,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 6,
+            "showPoints": "always",
+            "spanNulls": true,
+            "axisLabel": ""
+          },
+          "max": 1,
+          "min": 0,
+          "unit": "percentunit"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epoch"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Эпоха"
+              },
+              {
+                "id": "custom",
+                "value": {
+                  "axisLabel": "Эпоха",
+                  "axisPlacement": "bottom",
+                  "axisSoftMin": 0,
+                  "hideFrom": {
+                    "legend": true,
+                    "tooltip": false,
+                    "viz": true
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "time"
+            },
+            "properties": [
+              {
+                "id": "custom",
+                "value": {
+                  "hideFrom": {
+                    "legend": true,
+                    "tooltip": false,
+                    "viz": true
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 2
+      },
+      "id": 102,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        },
+        "xField": "epoch"
+      },
+      "targets": [
+        {
+          "columns": [
+            {
+              "selector": "time",
+              "text": "time",
+              "type": "timestamp",
+              "timestampFormat": "RFC3339"
+            },
+            {
+              "selector": "epoch",
+              "text": "epoch",
+              "type": "number"
+            },
+            {
+              "selector": "top1",
+              "text": "top1",
+              "type": "number"
+            },
+            {
+              "selector": "top5",
+              "text": "top5",
+              "type": "number"
+            }
+          ],
+          "datasource": {
+            "type": "yesoreyeram-infinity-datasource",
+            "uid": "reports"
+          },
+          "filters": [],
+          "format": "timeseries",
+          "parser": "backend",
+          "refId": "A",
+          "root_selector": "$type($) = \"array\" ? $ : $.rows",
+          "source": "url",
+          "type": "json",
+          "url": "http://report-server:8088/grafana/training_curves.json",
+          "url_options": {
+            "data": "",
+            "method": "GET"
+          }
+        }
+      ],
+      "title": "Accuracy (MRPH val split)",
+      "transformations": [
+        {
+          "id": "convertFieldType",
+          "options": {
+            "conversions": [
+              {
+                "destinationType": "time",
+                "targetField": "time"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "epoch"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "top1"
+              },
+              {
+                "destinationType": "number",
+                "targetField": "top5"
+              }
+            ]
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "desc": false,
+                "field": "epoch"
+              }
+            ]
+          }
+        }
+      ],
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": [
+    "poker-yolo",
+    "ml"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "http://localhost:8088",
+          "value": "http://localhost:8088"
+        },
+        "hide": 0,
+        "label": "Report server (preview images)",
+        "name": "report_server",
+        "options": [
+          {
+            "selected": true,
+            "text": "http://localhost:8088",
+            "value": "http://localhost:8088"
+          }
+        ],
+        "query": "http://localhost:8088",
+        "skipUrlSync": false,
+        "type": "constant"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Poker YOLO — Training curves",
+  "uid": "poker-yolo-curves",
+  "version": 1
+}
