@@ -15,6 +15,7 @@ from poker_yolo.logging_config import setup_logging
 from poker_yolo.paths import default_pipeline_config, default_weights
 from poker_yolo.pipeline import enrich_report_after_train, validate_infer_source
 from poker_yolo.preflight import run_preflight_cpu_smoke
+from poker_yolo.html_report import write_html_report_from_json
 from poker_yolo.reporting import finalize_report, get_report, start_report
 from poker_yolo.train import run_training
 from poker_yolo.validate import run_validation
@@ -75,6 +76,28 @@ def build_parser() -> argparse.ArgumentParser:
     )
     infer_parser.add_argument("--no-save", action="store_true", help="Skip saving annotated images")
 
+    html_parser = sub.add_parser(
+        "html-report",
+        help="Build interactive HTML report from saved JSON (default: latest.json)",
+    )
+    html_parser.add_argument(
+        "--report-json",
+        type=Path,
+        default=None,
+        help="Path to report JSON (default: reporting.report_dir/latest.json)",
+    )
+    html_parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Output HTML path (default: alongside JSON as latest.html)",
+    )
+    html_parser.add_argument(
+        "--no-embed-previews",
+        action="store_true",
+        help="Use relative image paths instead of base64 embedding",
+    )
+
     return parser
 
 
@@ -111,8 +134,10 @@ def _print_results_summary(
         "=" * 60,
         f"  Report (Markdown):  {paths['markdown']}",
         f"  Report (JSON):      {paths['json']}",
-        f"  Weights:            {weights}",
     ]
+    if paths.get("html"):
+        lines.append(f"  Report (HTML):      {paths['html']}")
+    lines.append(f"  Weights:            {weights}")
     if pred_dir is not None:
         lines.append(f"  Inference output:   {pred_dir}")
     lines.extend([
@@ -202,6 +227,25 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     config = Config.from_yaml(config_path)
+    if args.command == "html-report":
+        setup_logging(
+            config.reporting.log_dir,
+            level=config.reporting.level,
+            json_file=config.reporting.json_logs,
+            console_json=config.reporting.console_json,
+        )
+        json_path = args.report_json or (config.reporting.report_dir / "latest.json")
+        if not json_path.exists():
+            logger.error("Report JSON not found: %s", json_path)
+            return 1
+        out = write_html_report_from_json(
+            json_path,
+            output=args.output,
+            embed_previews=not args.no_embed_previews,
+        )
+        logger.info("HTML report: %s", out)
+        return 0
+
     if args.command in {"train", "validate", "infer"}:
         _prepare_datasets(config, args.command)
 

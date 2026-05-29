@@ -174,6 +174,13 @@ def finalize_report(
     reporting.report_dir.mkdir(parents=True, exist_ok=True)
     paths = write_report_files(report, reporting.report_dir)
 
+    try:
+        from poker_yolo.html_report import write_html_report
+
+        paths["html"] = write_html_report(report, reporting.report_dir)
+    except Exception as exc:
+        logger.warning("HTML report generation failed: %s", exc)
+
     if reporting.pushgateway_url:
         _push_prometheus_metrics(report, reporting.pushgateway_url)
 
@@ -185,6 +192,7 @@ def finalize_report(
         f"Report saved: {paths['json']}",
         json=str(paths["json"]),
         markdown=str(paths["markdown"]),
+        html=str(paths["html"]) if "html" in paths else None,
     )
     return paths
 

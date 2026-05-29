@@ -57,5 +57,6 @@ Write-Host "  MLflow:  http://localhost:${mlflowPort}"
 Write-Host "  Grafana (training):  http://localhost:${grafanaPort}/d/poker-yolo-training/poker-yolo-training"
 Write-Host "  Grafana (curves):    http://localhost:${grafanaPort}/d/poker-yolo-curves/poker-yolo-training-curves"
 Write-Host "  Grafana (benchmark): http://localhost:${grafanaPort}/d/poker-yolo-inference/poker-yolo-benchmark-inference"
+Write-Host "  HTML report:         runs/reports/latest.html"
 
 

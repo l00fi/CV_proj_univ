@@ -35,6 +35,10 @@ def test_build_parser_subcommands() -> None:
     assert args.weights == Path("model.pt")
     assert args.source is None
 
+    args = parser.parse_args(["html-report", "--report-json", "runs/reports/latest.json"])
+    assert args.command == "html-report"
+    assert args.report_json == Path("runs/reports/latest.json")
+
 
 def test_main_train_dispatches_training_and_validation(
     minimal_config_path, mocker,

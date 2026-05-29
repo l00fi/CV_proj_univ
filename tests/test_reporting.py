@@ -64,6 +64,7 @@ def test_write_report_files_creates_json_md_and_prom(tmp_path: Path) -> None:
     assert paths["json"].exists()
     assert paths["markdown"].exists()
     assert paths["prometheus"].exists()
+    assert paths.get("html") is None or paths["html"].exists()
     assert (tmp_path / "latest.json").exists()
     assert (tmp_path / "latest.md").exists()
 
@@ -110,6 +111,8 @@ def test_start_and_finalize_report(tmp_path: Path) -> None:
     paths = finalize_report(reporting, status="success")
 
     assert paths["json"].exists()
+    assert "html" in paths
+    assert paths["html"].exists()
     payload = json.loads(paths["json"].read_text(encoding="utf-8"))
     assert payload["status"] == "success"
     assert payload["phase"] == "train"
